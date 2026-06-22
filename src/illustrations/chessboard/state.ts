@@ -22,7 +22,7 @@ export function createChessboardStore(): Store<ChessboardState> {
     strategy,
     maxPieces,
     frame: 0,
-    playing: false,
+    playing: true,
     speed: 30,
     placements: computePlacements(pieces, strategy, maxPieces),
   });

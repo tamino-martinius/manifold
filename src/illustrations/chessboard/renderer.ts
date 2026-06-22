@@ -1,4 +1,5 @@
 import { type Camera, worldToScreen } from "./camera";
+import { coordToIndex } from "./spiral";
 import type { Placement } from "./types";
 
 const LIGHT = "#ece7df";
@@ -40,13 +41,14 @@ export function renderBoard(
   const drawNumbers = cellPx >= MIN_CELL_PX_FOR_NUMBERS;
   if (drawNumbers) {
     ctx.fillStyle = NUMBER_COLOR;
-    ctx.font = `${Math.floor(cellPx * 0.28)}px ui-monospace, monospace`;
+    ctx.font = `${Math.floor(cellPx * 0.26)}px ui-monospace, monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    for (const p of placements) {
-      const { sx, sy } = worldToScreen(cam, p.coord.x, p.coord.y);
-      if (sx < -cellPx || sx > canvasW + cellPx || sy < -cellPx || sy > canvasH + cellPx) continue;
-      ctx.fillText(String(p.index), sx, sy - half + cellPx * 0.18);
+    for (let y = worldYMin; y <= worldYMax; y++) {
+      for (let x = worldXMin; x <= worldXMax; x++) {
+        const { sx, sy } = worldToScreen(cam, x, y);
+        ctx.fillText(String(coordToIndex(x, y)), sx, sy);
+      }
     }
   }
 

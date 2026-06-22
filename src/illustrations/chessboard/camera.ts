@@ -26,11 +26,11 @@ export function fitCamera(
   }
   // Each cell occupies 1 world unit centered on its integer coord, so the drawn
   // extent runs from min-0.5 to max+0.5, plus padding cells on each side.
-  const halfPad = paddingCells + 0.5;
-  const worldMinX = minX - halfPad;
-  const worldMaxX = maxX + halfPad;
-  const worldMinY = minY - halfPad;
-  const worldMaxY = maxY + halfPad;
+  const padPlusHalf = paddingCells + 0.5;
+  const worldMinX = minX - padPlusHalf;
+  const worldMaxX = maxX + padPlusHalf;
+  const worldMinY = minY - padPlusHalf;
+  const worldMaxY = maxY + padPlusHalf;
   const worldW = worldMaxX - worldMinX;
   const worldH = worldMaxY - worldMinY;
   const scale = Math.min(canvasW / worldW, canvasH / worldH);

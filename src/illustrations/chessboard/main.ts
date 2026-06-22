@@ -52,14 +52,15 @@ function renderFrame(
   store: Store<ChessboardState>,
 ): void {
   const { placements, frame } = store.get();
-  const shown = placements.slice(0, Math.ceil(frame));
+  const count = Math.ceil(frame);
+  const shown = placements.slice(0, count);
   const cam = fitCamera(
     shown.map((p) => p.coord),
     canvas.width,
     canvas.height,
     4,
   );
-  renderBoard(ctx, cam, placements, Math.ceil(frame), canvas.width, canvas.height);
+  renderBoard(ctx, cam, placements, count, canvas.width, canvas.height);
 }
 
 const root = document.getElementById("app");

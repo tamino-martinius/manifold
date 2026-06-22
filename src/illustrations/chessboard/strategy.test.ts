@@ -23,4 +23,9 @@ describe("strategy", () => {
     expect(ids.filter((x) => x === "a").length).toBe(4);
     expect(ids.filter((x) => x === "b").length).toBe(2);
   });
+
+  it("weighted falls back to round-robin when all weights are zero", () => {
+    const ids = take("weighted", [piece("a", 0), piece("b", 0), piece("c", 0)], 5);
+    expect(ids).toEqual(["a", "b", "c", "a", "b"]);
+  });
 });

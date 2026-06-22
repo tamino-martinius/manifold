@@ -15,8 +15,9 @@ function roundRobin(pieces: Piece[]): PiecePicker {
 }
 
 function weighted(pieces: Piece[]): PiecePicker {
-  const acc = pieces.map(() => 0);
   const total = pieces.reduce((sum, p) => sum + Math.max(0, p.weight), 0);
+  if (total === 0) return roundRobin(pieces);
+  const acc = pieces.map(() => 0);
   return {
     next() {
       let best = 0;

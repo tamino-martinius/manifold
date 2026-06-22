@@ -33,6 +33,11 @@ export function gridCells(gridSize: GridSize): [number, number][] {
   return cells;
 }
 
+export function clampOffsets(offsets: [number, number][], gridSize: GridSize): [number, number][] {
+  const r = gridRadius(gridSize);
+  return offsets.filter(([dx, dy]) => Math.abs(dx) <= r && Math.abs(dy) <= r);
+}
+
 export function defaultPieces(): Piece[] {
   return [
     { id: "p1", color: "#000000", gridSize: 5, offsets: knightOffsets(), weight: 1 },

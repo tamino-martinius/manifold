@@ -1,5 +1,6 @@
 import { clear, el } from "../../../shared/dom";
 import type { Store } from "../../../shared/store";
+import { clampOffsets } from "../pieces";
 import type { ChessboardState } from "../state";
 import type { GridSize, Piece, StrategyKind } from "../types";
 import { movementGrid, toggleOffset } from "./movement-grid";
@@ -50,13 +51,15 @@ export function mountPanel(
     const sizeSelect = el(
       "select",
       {
-        onChange: (e: Event) =>
+        onChange: (e: Event) => {
+          const gridSize = Number((e.target as HTMLSelectElement).value) as GridSize;
           updatePiece(
             store,
             piece.id,
-            { gridSize: Number((e.target as HTMLSelectElement).value) as GridSize },
+            { gridSize, offsets: clampOffsets(piece.offsets, gridSize) },
             onChange,
-          ),
+          );
+        },
       },
       ([3, 5, 7, 9] as GridSize[]).map((n) => el("option", { value: String(n) }, [`${n}×${n}`])),
     ) as HTMLSelectElement;

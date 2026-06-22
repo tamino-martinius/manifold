@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { defaultPieces, gridCells, gridRadius, knightOffsets, offsetKey } from "./pieces";
+import {
+  clampOffsets,
+  defaultPieces,
+  gridCells,
+  gridRadius,
+  knightOffsets,
+  offsetKey,
+} from "./pieces";
 
 describe("pieces", () => {
   it("knightOffsets returns the 8 L-shaped moves", () => {
@@ -28,5 +35,21 @@ describe("pieces", () => {
     expect(cells.some(([x, y]) => x === 0 && y === 0)).toBe(false);
     expect(gridRadius(5)).toBe(2);
     expect(gridRadius(9)).toBe(4);
+  });
+});
+
+describe("clampOffsets", () => {
+  it("drops offsets outside the new grid radius", () => {
+    const offsets: [number, number][] = [
+      [1, 0],
+      [3, 3],
+      [-2, 1],
+      [4, -4],
+    ];
+    expect(clampOffsets(offsets, 3)).toEqual([[1, 0]]); // radius 1
+    expect(clampOffsets(offsets, 5)).toEqual([
+      [1, 0],
+      [-2, 1],
+    ]); // radius 2
   });
 });

@@ -1,0 +1,62 @@
+:root {
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f6f3ee;
+  color: #2a2620;
+}
+.gal-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+.gal-wrap h1 {
+  font-size: 28px;
+  margin: 0 0 4px;
+}
+.gal-wrap p.sub {
+  margin: 0 0 32px;
+  color: #6b6256;
+}
+.gal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+.gal-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: #fffdf9;
+  border: 1px solid #e3ddd0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.gal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+.gal-card canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #ddd6c8;
+}
+.gal-card .gal-body {
+  padding: 14px 16px;
+}
+.gal-card h2 {
+  font-size: 16px;
+  margin: 0 0 4px;
+}
+.gal-card p {
+  font-size: 13px;
+  margin: 0;
+  color: #6b6256;
+}

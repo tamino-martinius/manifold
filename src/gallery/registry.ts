@@ -1,4 +1,5 @@
 import { mountChessboardPreview } from "../illustrations/chessboard/preview";
+import { mountCollatzPreview } from "../illustrations/collatz/preview";
 import { mountDragonPreview } from "../illustrations/dragon/preview";
 import { mountFordCirclesPreview } from "../illustrations/ford-circles/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
@@ -88,5 +89,13 @@ export const illustrations: Illustration[] = [
       "Each prime plotted at polar (r=n, θ=n radians); zoom out and the primes organize into ~6, then ~44 Archimedean arms.",
     route: "prime-spiral/",
     mountPreview: mountPrimeSpiralPreview,
+  },
+  {
+    id: "collatz",
+    title: "Collatz Coral",
+    description:
+      "Thousands of 3n+1 trajectories grown from a shared root into an organic branching tree; two turn-angle knobs morph it from tight fern to sprawling coral.",
+    route: "collatz/",
+    mountPreview: mountCollatzPreview,
   },
 ];

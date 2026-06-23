@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/prime-spiral/"><img src="docs/previews/prime-spiral.png" alt="Prime Spiral (Polar)" width="240"></a> | **[Prime Spiral (Polar)](https://manifold.tamino.dev/prime-spiral/)** | Every prime plotted at polar `(r=n, θ=n radians)`; zoom out and the points snap into ~6, then ~44 Archimedean spiral arms — the rational approximations `6/1, 44/7, …` of 2π. Colour by residue with a modulus slider (2–64, marked at 44) to paint each arm a single hue (Dirichlet's theorem made visible); scrub the reveal, overlay the full integer lattice, and tune dot size. Scales to **1,000,000**, sieved in a Web Worker with a progress bar so the UI never freezes. |
 
 ## Theme
 

@@ -2,6 +2,7 @@ import { mountChessboardPreview } from "../illustrations/chessboard/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 import { mountPascalPreview } from "../illustrations/pascal/preview";
+import { mountUlamPreview } from "../illustrations/ulam/preview";
 
 export type Illustration = {
   id: string;
@@ -43,5 +44,13 @@ export const illustrations: Illustration[] = [
       "Color Pascal's triangle by binomial coefficient mod m — m=2 is the Sierpinski gasket, other moduli give different self-similar lattices.",
     route: "pascal/",
     mountPreview: mountPascalPreview,
+  },
+  {
+    id: "ulam",
+    title: "Ulam / Prime Spiral",
+    description:
+      "The integers spiral out from the center; primes light up and resolve into diagonal streaks traced by prime-rich quadratics like n²+n+41.",
+    route: "ulam/",
+    mountPreview: mountUlamPreview,
   },
 ];

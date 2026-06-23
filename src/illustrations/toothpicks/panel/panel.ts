@@ -150,16 +150,19 @@ export function mountPanel(
 
     const card = el("div", { className: "tp-piece" }, [head, block]);
     if (strategyKind === "weighted") {
-      card.append(
-        field(
-          "Weight",
-          mNumber({
-            value: shape.weight,
-            min: 0,
-            onChange: (v) => updateShape(store, shape.id, { weight: v }, onChange),
-          }),
-        ),
+      // `tp-weight` pins the weight to the bottom of the card (margin-top:auto), so
+      // the Weight row lines up across cards even when their shape diagrams differ
+      // in height.
+      const weight = field(
+        "Weight",
+        mNumber({
+          value: shape.weight,
+          min: 0,
+          onChange: (v) => updateShape(store, shape.id, { weight: v }, onChange),
+        }),
       );
+      weight.classList.add("tp-weight");
+      card.append(weight);
     }
     return card;
   }

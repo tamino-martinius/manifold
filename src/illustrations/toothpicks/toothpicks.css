@@ -383,6 +383,11 @@ body {
 .tp-piece .tp-segment {
   padding: 4px 2px;
 }
+/* Pin Weight to the bottom of the card so it lines up across cards whose shape
+   diagrams differ in height. */
+.tp-piece .tp-weight {
+  margin-top: auto;
+}
 .tp-preset-trigger {
   max-width: 100%;
   overflow: hidden;

@@ -1,6 +1,7 @@
 import { mountChessboardPreview } from "../illustrations/chessboard/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
+import { mountPascalPreview } from "../illustrations/pascal/preview";
 
 export type Illustration = {
   id: string;
@@ -34,5 +35,13 @@ export const illustrations: Illustration[] = [
       "Each even number scattered against how many ways it splits into two primes; the dots resolve into a glowing comet whose lower edge never reaches zero.",
     route: "goldbach/",
     mountPreview: mountGoldbachPreview,
+  },
+  {
+    id: "pascal",
+    title: "Pascal's Triangle mod n",
+    description:
+      "Color Pascal's triangle by binomial coefficient mod m — m=2 is the Sierpinski gasket, other moduli give different self-similar lattices.",
+    route: "pascal/",
+    mountPreview: mountPascalPreview,
   },
 ];

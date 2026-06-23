@@ -28,4 +28,13 @@ describe("registry", () => {
     expect(gold?.description.length).toBeGreaterThan(0);
     expect(typeof gold?.mountPreview).toBe("function");
   });
+
+  it("includes the pascal illustration with required fields", () => {
+    const p = illustrations.find((i) => i.id === "pascal");
+    expect(p).toBeDefined();
+    expect(p?.route).toBe("pascal/");
+    expect(p?.title.length).toBeGreaterThan(0);
+    expect(p?.description.length).toBeGreaterThan(0);
+    expect(typeof p?.mountPreview).toBe("function");
+  });
 });

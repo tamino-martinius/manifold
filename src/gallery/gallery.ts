@@ -47,7 +47,9 @@ function card(illo: Illustration, index: number): HTMLElement {
     el("h2", { className: "m-card-title" }, [illo.title]),
     el("p", { className: "ds-prose m-card-blurb" }, [illo.description]),
   ]);
-  const node = el("a", { className: "m-card", href: illo.route }, [figure, body]);
+  // Absolute (root-relative) so the link replaces the path instead of appending
+  // to it when the gallery is viewed from a non-root URL (the site deploys at /).
+  const node = el("a", { className: "m-card", href: `/${illo.route}` }, [figure, body]);
   // Mount the live preview once the canvas is attached to the DOM.
   requestAnimationFrame(() => illo.mountPreview(canvas));
   return node;

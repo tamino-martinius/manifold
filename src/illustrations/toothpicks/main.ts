@@ -15,8 +15,12 @@ import type { PlacedData } from "./types";
 
 // Higher = snappier zoom easing (per-second exponential rate).
 const ZOOM_SMOOTH_RATE = 8;
-// Generations revealed per second at speed 30; Play advances whole generations.
-const GEN_RATE = 3;
+// Generations revealed per second at speed 30. The rate accelerates with the
+// current stage — `GEN_RATE_BASE + frame * GEN_ACCEL` — so the reveal keeps a
+// roughly constant on-screen pace as the structure (and the zoom-out) grows;
+// otherwise late stages appear to crawl.
+const GEN_RATE_BASE = 2;
+const GEN_ACCEL = 0.12;
 
 function linkItem(link: ResourceLink): HTMLElement {
   return el(
@@ -213,7 +217,8 @@ function mount(root: HTMLElement): void {
         store.set({ playing: false }); // reached the last generation → stops
         return;
       }
-      const next = s.frame + (s.speed / 30) * GEN_RATE * Math.min(dt, 0.1);
+      const rate = GEN_RATE_BASE + s.frame * GEN_ACCEL;
+      const next = s.frame + (s.speed / 30) * rate * Math.min(dt, 0.1);
       store.set({ frame: Math.min(next, G) });
     },
     render,

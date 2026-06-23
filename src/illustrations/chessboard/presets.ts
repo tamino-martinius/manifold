@@ -148,14 +148,6 @@ export const MOVEMENT_PRESETS: MovementPreset[] = [
   { name: "Giraffe", gridSize: 9, offsets: sym([[1, 4]]) },
   { name: "Antelope", gridSize: 9, offsets: sym([[3, 4]]) },
   {
-    name: "Giraffe+Antelope",
-    gridSize: 9,
-    offsets: sym([
-      [1, 4],
-      [3, 4],
-    ]),
-  },
-  {
     name: "Star",
     gridSize: 9,
     offsets: sym([

@@ -122,20 +122,34 @@ export function renderBoard(
 
   for (let c = 0; c < colors.length; c++) {
     ctx.fillStyle = colors[c];
-    ctx.beginPath();
-    for (let i = 0; i < limit; i++) {
-      if (colorIndex[i] !== c) continue;
-      const sx = xs[i] * cam.scale + cam.offsetX;
-      const sy = -ys[i] * cam.scale + cam.offsetY;
-      if (sx < off || sx > maxX || sy < off || sy > maxY) continue;
-      if (rounded) ctx.roundRect(sx - o, sy - o, size, size, radius);
-      else ctx.rect(sx - o, sy - o, size, size);
-    }
-    ctx.fill();
-    if (drawOutline) {
-      ctx.lineWidth = Math.max(1, cellPx * 0.04);
-      ctx.strokeStyle = OUTLINE;
-      ctx.stroke();
+    if (rounded) {
+      // Larger cells: visible count is bounded by the canvas area, so one
+      // batched roundRect path per color is cheap.
+      ctx.beginPath();
+      for (let i = 0; i < limit; i++) {
+        if (colorIndex[i] !== c) continue;
+        const sx = xs[i] * cam.scale + cam.offsetX;
+        const sy = -ys[i] * cam.scale + cam.offsetY;
+        if (sx < off || sx > maxX || sy < off || sy > maxY) continue;
+        ctx.roundRect(sx - o, sy - o, size, size, radius);
+      }
+      ctx.fill();
+      if (drawOutline) {
+        ctx.lineWidth = Math.max(1, cellPx * 0.04);
+        ctx.strokeStyle = OUTLINE;
+        ctx.stroke();
+      }
+    } else {
+      // Tiny sharp squares: draw immediately per piece. Accumulating ~1M of
+      // them into a single Path2D makes the browser drop the whole fill (the
+      // "blank board" at high zoom-out); per-piece fillRect handles any count.
+      for (let i = 0; i < limit; i++) {
+        if (colorIndex[i] !== c) continue;
+        const sx = xs[i] * cam.scale + cam.offsetX;
+        const sy = -ys[i] * cam.scale + cam.offsetY;
+        if (sx < off || sx > maxX || sy < off || sy > maxY) continue;
+        ctx.fillRect(sx - o, sy - o, size, size);
+      }
     }
   }
 }

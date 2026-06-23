@@ -1,25 +1,27 @@
 import "../../styles/manifold/styles.css";
-import "./chessboard.css";
+import "../chessboard/chessboard.css";
+import "./ulam.css";
 import { el } from "../../shared/dom";
 import { pageFooter } from "../../shared/footer";
 import { icon } from "../../shared/icons";
 import { initTheme } from "../../shared/theme";
 import { themeToggle } from "../../shared/theme-toggle";
-import { createAnimator } from "./animation";
-import { easeScale, fitFromExtent } from "./camera";
+import { createAnimator } from "../chessboard/animation";
+import { easeScale, fitFromExtent } from "../chessboard/camera";
 import { createEngine } from "./engine";
-import { CHESSBOARD_LINKS, type ResourceLink } from "./links";
+import { createExtentTracker } from "./extent";
+import { type ResourceLink, ULAM_LINKS } from "./links";
 import { mountPanel } from "./panel/panel";
-import { renderBoard } from "./renderer";
-import { type ChessboardState, createChessboardStore } from "./state";
-import type { PlacedData } from "./types";
+import { renderUlam } from "./renderer";
+import { type UlamState, createUlamStore } from "./state";
+import type { UlamData } from "./types";
 
 // Higher = snappier zoom easing (per-second exponential rate).
 const ZOOM_SMOOTH_RATE = 8;
-// Relative (accelerating) placement rate: starts slow, grows with how many are
-// already placed, so early pieces are watchable and large fills race to the end.
-const BASE_RATE = 6; // pieces/sec near the start
-const GROWTH_RATE = 1.1; // + this fraction of the placed count per second
+// Relative (accelerating) reveal rate: starts slow so early structure is
+// watchable, then grows with the count so a 1e6 reveal still finishes.
+const BASE_RATE = 6; // integers/sec near the start
+const GROWTH_RATE = 1.1; // + this fraction of the current frame per second
 
 function linkItem(link: ResourceLink): HTMLElement {
   return el(
@@ -41,8 +43,8 @@ function linkItem(link: ResourceLink): HTMLElement {
   );
 }
 
-// A toolbar dropdown of related links (fixed-positioned so it escapes the
-// toolbar, closes on outside-click / scroll / link-click).
+// A toolbar dropdown of related links (portalled to <body> so it escapes the
+// toolbar's stacking context; closes on outside-click / scroll / link-click).
 function linkDropdown(label: string, links: ResourceLink[]): HTMLElement {
   const menu = el("div", { className: "cb-dd-menu" });
   for (const l of links) menu.append(linkItem(l));
@@ -66,8 +68,6 @@ function linkDropdown(label: string, links: ResourceLink[]): HTMLElement {
     window.removeEventListener("resize", close);
   }
   function open(): void {
-    // Portal the menu to <body> so it isn't clipped behind the canvas by the
-    // toolbar's backdrop-filter stacking context. Capped to 400px tall.
     document.body.append(menu);
     const rect = trigger.getBoundingClientRect();
     menu.style.top = `${Math.round(rect.bottom + 6)}px`;
@@ -90,8 +90,8 @@ function toolbar(): HTMLElement {
     el("span", { className: "cb-wordmark" }, ["manifold"]),
   ]);
   const right = el("div", { className: "cb-toolbar-right" });
-  const videos = CHESSBOARD_LINKS.filter((l) => l.kind === "video");
-  const refs = CHESSBOARD_LINKS.filter((l) => l.kind === "oeis");
+  const videos = ULAM_LINKS.filter((l) => l.kind === "video");
+  const refs = ULAM_LINKS.filter((l) => l.kind === "oeis");
   if (videos.length > 0) right.append(linkDropdown("Videos", videos));
   if (refs.length > 0) right.append(linkDropdown("OEIS", refs));
   right.append(themeToggle("cb-icon-btn cb-icon-btn--secondary"));
@@ -99,7 +99,7 @@ function toolbar(): HTMLElement {
   return el("header", { className: "cb-toolbar" }, [
     el("div", { className: "cb-toolbar-left" }, [
       brand,
-      el("span", { className: "cb-crumb ds-label" }, ["/ chessboard patterns"]),
+      el("span", { className: "cb-crumb ds-label" }, ["/ ulam · prime spiral"]),
     ]),
     right,
   ]);
@@ -119,7 +119,7 @@ function mount(root: HTMLElement): void {
   );
 
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-  const store = createChessboardStore();
+  const store = createUlamStore();
   const engine = createEngine(store);
 
   const resize = () => {
@@ -130,75 +130,60 @@ function mount(root: HTMLElement): void {
   resize();
   window.addEventListener("resize", resize);
 
-  // Loading overlay driven by worker compute progress.
+  // Loading overlay driven by worker compute progress (large N only).
   const bar = el("div", { className: "cb-loading-bar" });
   const overlay = el("div", { className: "cb-loading" }, [
-    el("span", { className: "ds-label" }, ["computing placements"]),
+    el("span", { className: "ds-label" }, ["sieving primes"]),
     el("div", { className: "cb-loading-track" }, [bar]),
   ]);
   wrap.append(overlay);
-  const syncOverlay = (s: ChessboardState) => {
+  const syncOverlay = (s: UlamState) => {
     overlay.classList.toggle("is-visible", s.loading);
     bar.style.width = `${Math.round(s.progress * 100)}%`;
   };
   store.subscribe(syncOverlay);
   syncOverlay(store.get());
 
-  // Incrementally tracked half-extent of the shown pieces, so the auto-fit
-  // never rebuilds a coordinate array (cheap even at 100k).
+  // Incrementally tracked half-extent of the revealed integers, so the auto-fit
+  // never rebuilds a coordinate array (cheap even at 1e6).
+  const tracker = createExtentTracker();
   let displayScale = 0;
   let lastT = 0;
-  let viewHalfX = 0;
-  let viewHalfY = 0;
-  let scannedTo = 0;
-  let lastPlaced: PlacedData | null = null;
   // Dirty-flag: skip the (potentially large) redraw when nothing visible changed.
-  let drawFrame = -1;
+  let drawCount = -1;
   let drawScale = -1;
   let drawW = -1;
   let drawH = -1;
-  let drawPlaced: PlacedData | null = null;
+  let drawData: UlamData | null = null;
 
   const render = () => {
     const s = store.get();
-    const placed = s.placed;
-    if (placed !== lastPlaced) {
-      lastPlaced = placed;
-      viewHalfX = viewHalfY = scannedTo = 0;
-    }
-    const count = Math.min(Math.floor(s.frame), placed.count);
-    if (count < scannedTo) viewHalfX = viewHalfY = scannedTo = 0;
-    for (let i = scannedTo; i < count; i++) {
-      const ax = Math.abs(placed.xs[i]);
-      const ay = Math.abs(placed.ys[i]);
-      if (ax > viewHalfX) viewHalfX = ax;
-      if (ay > viewHalfY) viewHalfY = ay;
-    }
-    scannedTo = count;
+    const count = Math.floor(s.frame);
+    const { halfX, halfY } = tracker.to(count);
 
-    const target = fitFromExtent(viewHalfX, viewHalfY, canvas.width, canvas.height, 4);
+    const target = fitFromExtent(halfX, halfY, canvas.width, canvas.height, 4);
     const now = performance.now();
     const dt = lastT === 0 ? 0 : (now - lastT) / 1000;
     lastT = now;
     displayScale = easeScale(displayScale, target.scale, dt, ZOOM_SMOOTH_RATE);
 
     const dirty =
-      count !== drawFrame ||
+      count !== drawCount ||
       Math.abs(displayScale - drawScale) > 1e-3 ||
       canvas.width !== drawW ||
       canvas.height !== drawH ||
-      placed !== drawPlaced;
+      s.data !== drawData;
     if (!dirty) return;
-    drawFrame = count;
+    drawCount = count;
     drawScale = displayScale;
     drawW = canvas.width;
     drawH = canvas.height;
-    drawPlaced = placed;
+    drawData = s.data;
 
-    renderBoard(
+    renderUlam(
       ctx,
       { scale: displayScale, offsetX: target.offsetX, offsetY: target.offsetY },
-      placed,
+      s.data,
       s.frame,
       canvas.width,
       canvas.height,
@@ -211,10 +196,11 @@ function mount(root: HTMLElement): void {
     isPlaying: () => store.get().playing,
     onTick: (dt) => {
       const s = store.get();
-      const max = s.placed.count;
-      if (max <= 0) return; // still computing — nothing to advance yet
+      if (s.loading) return; // wait for the first sieve before revealing
+      const max = s.n;
+      if (max <= 0) return;
       if (s.frame >= max) {
-        store.set({ playing: false }); // reached the end → stops, button shows "Replay"
+        store.set({ playing: false }); // reached the end → button shows "Replay"
         return;
       }
       const speedFactor = s.speed / 30;
@@ -225,7 +211,7 @@ function mount(root: HTMLElement): void {
   });
   animator.start();
 
-  engine.recompute(); // kick off the first computation in the worker
+  engine.recompute(); // kick off the first sieve
 }
 
 const root = document.getElementById("app");

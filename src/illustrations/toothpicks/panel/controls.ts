@@ -1,14 +1,13 @@
 // Small Manifold-styled control builders for the studio panel (vanilla TS).
 import { el } from "../../../shared/dom";
-import { groupThousands, parseGrouped } from "../../../shared/format";
 import { type IconName, icon } from "../../../shared/icons";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
 /** A labelled field: uppercase mono micro-label above a control. */
 export function field(label: string, control: HTMLElement): HTMLElement {
-  return el("div", { className: "cb-field" }, [
-    el("span", { className: "cb-field-label ds-label" }, [label]),
+  return el("div", { className: "tp-field" }, [
+    el("span", { className: "tp-field-label ds-label" }, [label]),
     control,
   ]);
 }
@@ -18,7 +17,7 @@ export function mButton(
   opts: { icon?: IconName; variant?: Variant; onClick?: () => void } = {},
 ): HTMLButtonElement {
   const btn = el("button", {
-    className: `cb-btn cb-btn--${opts.variant ?? "secondary"}`,
+    className: `tp-btn tp-btn--${opts.variant ?? "secondary"}`,
     type: "button",
   }) as HTMLButtonElement;
   if (opts.icon) btn.append(icon(opts.icon, 14));
@@ -32,7 +31,7 @@ export function mIconButton(
   opts: { title?: string; variant?: Variant; onClick?: () => void } = {},
 ): HTMLButtonElement {
   const btn = el("button", {
-    className: `cb-icon-btn cb-icon-btn--${opts.variant ?? "secondary"}`,
+    className: `tp-icon-btn tp-icon-btn--${opts.variant ?? "secondary"}`,
     type: "button",
     title: opts.title ?? name,
     "aria-label": opts.title ?? name,
@@ -51,7 +50,7 @@ export function mSlider(opts: {
 }): HTMLInputElement {
   const input = el("input", {
     type: "range",
-    className: "cb-slider",
+    className: "tp-slider",
     min: String(opts.min),
     max: String(opts.max),
     step: String(opts.step ?? 1),
@@ -66,11 +65,11 @@ export function mSegmented<T extends string>(
   value: T,
   onChange: (value: T) => void,
 ): HTMLElement {
-  const root = el("div", { className: "cb-segmented" });
+  const root = el("div", { className: "tp-segmented" });
   for (const opt of options) {
     const seg = el(
       "button",
-      { type: "button", className: `cb-segment${opt.value === value ? " is-active" : ""}` },
+      { type: "button", className: `tp-segment${opt.value === value ? " is-active" : ""}` },
       [opt.label],
     );
     seg.addEventListener("click", () => onChange(opt.value));
@@ -89,14 +88,13 @@ export function mNumber(opts: {
 }): HTMLElement {
   const stepFor = (v: number): number =>
     typeof opts.step === "function" ? opts.step(v) : (opts.step ?? 1);
-  // Text input (not type=number) so the displayed value can carry thousands
-  // separators; `inputmode=numeric` keeps the mobile keypad numeric.
   const input = el("input", {
-    type: "text",
-    inputmode: "numeric",
-    className: "cb-number-input",
-    value: groupThousands(opts.value),
+    type: "number",
+    className: "tp-number-input",
+    value: String(opts.value),
   }) as HTMLInputElement;
+  if (opts.min !== undefined) input.min = String(opts.min);
+  if (opts.max !== undefined) input.max = String(opts.max);
 
   const clamp = (v: number): number => {
     let n = Number.isFinite(v) ? v : (opts.min ?? 0);
@@ -104,23 +102,22 @@ export function mNumber(opts: {
     if (opts.max !== undefined) n = Math.min(opts.max, n);
     return n;
   };
-  const current = (): number => parseGrouped(input.value);
   const commit = (v: number): void => {
     const n = clamp(v);
-    input.value = groupThousands(n);
+    input.value = String(n);
     opts.onChange(n);
   };
-  input.addEventListener("change", () => commit(current()));
+  input.addEventListener("change", () => commit(Number(input.value)));
 
-  return el("div", { className: "cb-number" }, [
+  return el("div", { className: "tp-number" }, [
     mIconButton("minus", {
       title: "Decrease",
-      onClick: () => commit(current() - stepFor(current())),
+      onClick: () => commit(Number(input.value) - stepFor(Number(input.value))),
     }),
     input,
     mIconButton("plus", {
       title: "Increase",
-      onClick: () => commit(current() + stepFor(current())),
+      onClick: () => commit(Number(input.value) + stepFor(Number(input.value))),
     }),
   ]);
 }

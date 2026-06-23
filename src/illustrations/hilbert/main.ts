@@ -1,25 +1,25 @@
 import "../../styles/manifold/styles.css";
-import "./chessboard.css";
+import "../chessboard/chessboard.css";
+import "./hilbert.css";
 import { el } from "../../shared/dom";
 import { pageFooter } from "../../shared/footer";
 import { icon } from "../../shared/icons";
 import { initTheme } from "../../shared/theme";
 import { themeToggle } from "../../shared/theme-toggle";
-import { createAnimator } from "./animation";
-import { easeScale, fitFromExtent } from "./camera";
-import { createEngine } from "./engine";
-import { CHESSBOARD_LINKS, type ResourceLink } from "./links";
+import { createAnimator } from "../chessboard/animation";
+import { anchoredCamera, easeScale, fitAnchoredScale } from "./camera";
+import { type HilbertPath, hilbertPath } from "./hilbert";
+import { HILBERT_LINKS, type ResourceLink } from "./links";
 import { mountPanel } from "./panel/panel";
-import { renderBoard } from "./renderer";
-import { type ChessboardState, createChessboardStore } from "./state";
-import type { PlacedData } from "./types";
+import { renderCurve } from "./renderer";
+import { createHilbertStore } from "./state";
 
-// Higher = snappier zoom easing (per-second exponential rate).
+// Higher = snappier zoom easing when the order (and thus the fit) changes.
 const ZOOM_SMOOTH_RATE = 8;
-// Relative (accelerating) placement rate: starts slow, grows with how many are
-// already placed, so early pieces are watchable and large fills race to the end.
-const BASE_RATE = 6; // pieces/sec near the start
-const GROWTH_RATE = 1.1; // + this fraction of the placed count per second
+// Relative (accelerating) reveal: starts slow so the early path is watchable,
+// then races as more is drawn so the largest orders still finish quickly.
+const BASE_RATE = 10; // points/sec near the start
+const GROWTH_RATE = 1.2; // + this fraction of the revealed count per second
 
 function linkItem(link: ResourceLink): HTMLElement {
   return el(
@@ -41,8 +41,8 @@ function linkItem(link: ResourceLink): HTMLElement {
   );
 }
 
-// A toolbar dropdown of related links (fixed-positioned so it escapes the
-// toolbar, closes on outside-click / scroll / link-click).
+// A toolbar dropdown of related links (portaled to <body> so it escapes the
+// toolbar's stacking context; closes on outside-click / scroll / link-click).
 function linkDropdown(label: string, links: ResourceLink[]): HTMLElement {
   const menu = el("div", { className: "cb-dd-menu" });
   for (const l of links) menu.append(linkItem(l));
@@ -66,8 +66,6 @@ function linkDropdown(label: string, links: ResourceLink[]): HTMLElement {
     window.removeEventListener("resize", close);
   }
   function open(): void {
-    // Portal the menu to <body> so it isn't clipped behind the canvas by the
-    // toolbar's backdrop-filter stacking context. Capped to 400px tall.
     document.body.append(menu);
     const rect = trigger.getBoundingClientRect();
     menu.style.top = `${Math.round(rect.bottom + 6)}px`;
@@ -90,8 +88,8 @@ function toolbar(): HTMLElement {
     el("span", { className: "cb-wordmark" }, ["manifold"]),
   ]);
   const right = el("div", { className: "cb-toolbar-right" });
-  const videos = CHESSBOARD_LINKS.filter((l) => l.kind === "video");
-  const refs = CHESSBOARD_LINKS.filter((l) => l.kind === "oeis");
+  const videos = HILBERT_LINKS.filter((l) => l.kind === "video");
+  const refs = HILBERT_LINKS.filter((l) => l.kind === "oeis");
   if (videos.length > 0) right.append(linkDropdown("Videos", videos));
   if (refs.length > 0) right.append(linkDropdown("OEIS", refs));
   right.append(themeToggle("cb-icon-btn cb-icon-btn--secondary"));
@@ -99,7 +97,7 @@ function toolbar(): HTMLElement {
   return el("header", { className: "cb-toolbar" }, [
     el("div", { className: "cb-toolbar-left" }, [
       brand,
-      el("span", { className: "cb-crumb ds-label" }, ["/ chessboard patterns"]),
+      el("span", { className: "cb-crumb ds-label" }, ["/ hilbert curve"]),
     ]),
     right,
   ]);
@@ -119,8 +117,7 @@ function mount(root: HTMLElement): void {
   );
 
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-  const store = createChessboardStore();
-  const engine = createEngine(store);
+  const store = createHilbertStore();
 
   const resize = () => {
     const dpr = window.devicePixelRatio || 1;
@@ -130,91 +127,77 @@ function mount(root: HTMLElement): void {
   resize();
   window.addEventListener("resize", resize);
 
-  // Loading overlay driven by worker compute progress.
-  const bar = el("div", { className: "cb-loading-bar" });
-  const overlay = el("div", { className: "cb-loading" }, [
-    el("span", { className: "ds-label" }, ["computing placements"]),
-    el("div", { className: "cb-loading-track" }, [bar]),
-  ]);
-  wrap.append(overlay);
-  const syncOverlay = (s: ChessboardState) => {
-    overlay.classList.toggle("is-visible", s.loading);
-    bar.style.width = `${Math.round(s.progress * 100)}%`;
-  };
-  store.subscribe(syncOverlay);
-  syncOverlay(store.get());
-
-  // Incrementally tracked half-extent of the shown pieces, so the auto-fit
-  // never rebuilds a coordinate array (cheap even at 100k).
   let displayScale = 0;
   let lastT = 0;
-  let viewHalfX = 0;
-  let viewHalfY = 0;
+  // Incrementally tracked extent of the *revealed* path (max cell x/y), so the
+  // auto-fit never rescans the array even at 262k points.
+  let viewMaxX = 0;
+  let viewMaxY = 0;
   let scannedTo = 0;
-  let lastPlaced: PlacedData | null = null;
-  // Dirty-flag: skip the (potentially large) redraw when nothing visible changed.
+  let lastPath: HilbertPath | null = null;
+  // Dirty-flag: skip the redraw when nothing visible changed.
   let drawFrame = -1;
   let drawScale = -1;
   let drawW = -1;
   let drawH = -1;
-  let drawPlaced: PlacedData | null = null;
+  let drawK = -1;
+  let drawColor = "";
 
   const render = () => {
     const s = store.get();
-    const placed = s.placed;
-    if (placed !== lastPlaced) {
-      lastPlaced = placed;
-      viewHalfX = viewHalfY = scannedTo = 0;
+    const path = hilbertPath(s.k); // memoized — regenerates only on a new order
+
+    // Track the revealed extent: reset on a new order or when scrubbed back,
+    // then scan only the newly-revealed points.
+    if (path !== lastPath) {
+      lastPath = path;
+      viewMaxX = viewMaxY = scannedTo = 0;
     }
-    const count = Math.min(Math.floor(s.frame), placed.count);
-    if (count < scannedTo) viewHalfX = viewHalfY = scannedTo = 0;
+    const count = Math.min(Math.floor(s.frame), path.n);
+    if (count < scannedTo) viewMaxX = viewMaxY = scannedTo = 0;
     for (let i = scannedTo; i < count; i++) {
-      const ax = Math.abs(placed.xs[i]);
-      const ay = Math.abs(placed.ys[i]);
-      if (ax > viewHalfX) viewHalfX = ax;
-      if (ay > viewHalfY) viewHalfY = ay;
+      if (path.xs[i] > viewMaxX) viewMaxX = path.xs[i];
+      if (path.ys[i] > viewMaxY) viewMaxY = path.ys[i];
     }
     scannedTo = count;
 
-    const target = fitFromExtent(viewHalfX, viewHalfY, canvas.width, canvas.height, 4);
+    const targetScale = fitAnchoredScale(viewMaxX, viewMaxY, canvas.width, canvas.height);
     const now = performance.now();
     const dt = lastT === 0 ? 0 : (now - lastT) / 1000;
     lastT = now;
-    displayScale = easeScale(displayScale, target.scale, dt, ZOOM_SMOOTH_RATE);
+    displayScale = easeScale(displayScale, targetScale, dt, ZOOM_SMOOTH_RATE);
 
     const dirty =
       count !== drawFrame ||
-      Math.abs(displayScale - drawScale) > 1e-3 ||
+      Math.abs(displayScale - drawScale) > 1e-4 ||
       canvas.width !== drawW ||
       canvas.height !== drawH ||
-      placed !== drawPlaced;
+      s.k !== drawK ||
+      s.colorMode !== drawColor;
     if (!dirty) return;
     drawFrame = count;
     drawScale = displayScale;
     drawW = canvas.width;
     drawH = canvas.height;
-    drawPlaced = placed;
+    drawK = s.k;
+    drawColor = s.colorMode;
 
-    renderBoard(
-      ctx,
-      { scale: displayScale, offsetX: target.offsetX, offsetY: target.offsetY },
-      placed,
-      s.frame,
-      canvas.width,
-      canvas.height,
-    );
+    // Pin the path's bottom-left start point to a static screen anchor; offsets
+    // are recomputed at the eased scale so it stays put while the zoom settles.
+    const cam = anchoredCamera(displayScale, canvas.width, canvas.height);
+    renderCurve(ctx, cam, path, s.frame, s.colorMode, canvas.width, canvas.height);
   };
 
-  mountPanel(panelEl, store, () => engine.recompute());
+  // Pre-warm the path for the new order so the first post-change frame is instant.
+  mountPanel(panelEl, store, () => hilbertPath(store.get().k));
 
   const animator = createAnimator({
     isPlaying: () => store.get().playing,
     onTick: (dt) => {
       const s = store.get();
-      const max = s.placed.count;
-      if (max <= 0) return; // still computing — nothing to advance yet
+      const max = 4 ** s.k;
       if (s.frame >= max) {
-        store.set({ playing: false }); // reached the end → stops, button shows "Replay"
+        store.set({ playing: false }); // reached the end → button shows "Replay"
         return;
       }
       const speedFactor = s.speed / 30;
@@ -224,8 +207,6 @@ function mount(root: HTMLElement): void {
     render,
   });
   animator.start();
-
-  engine.recompute(); // kick off the first computation in the worker
 }
 
 const root = document.getElementById("app");

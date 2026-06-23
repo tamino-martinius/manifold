@@ -1,0 +1,11 @@
+/* Dragon Curve studio.
+ *
+ * The toolbar / panel / control chrome is reused verbatim from the chessboard
+ * via `import "../chessboard/chessboard.css"` in main.ts (the cb-* classes), so
+ * the atlas reads as one product. Only dragon-specific tweaks live here. */
+
+/* The dragon has no worker/loading overlay, but it can render a very dense
+ * polyline — hint the browser to keep the canvas crisp rather than smoothing. */
+.cb-canvas-wrap canvas {
+  image-rendering: auto;
+}

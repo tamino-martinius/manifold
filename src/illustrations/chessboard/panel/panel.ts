@@ -1,13 +1,17 @@
+import { pickDistinctColor } from "../../../shared/color";
 import { clear, el } from "../../../shared/dom";
 import { icon } from "../../../shared/icons";
 import type { Store } from "../../../shared/store";
 import { clampOffsets } from "../pieces";
+import { MOVEMENT_PRESETS, type MovementPreset, presetNameFor } from "../presets";
 import type { ChessboardState } from "../state";
 import type { GridSize, Piece, StrategyKind } from "../types";
 import { field, mButton, mIconButton, mNumber, mSegmented, mSlider } from "./controls";
-import { movementGrid, toggleOffset } from "./movement-grid";
+import { miniGrid, movementGrid, toggleOffset } from "./movement-grid";
 
-const PALETTE = ["#3ddc84", "#ff5b47", "#22d3ee", "#ffb000", "#9d8cff", "#ff2e97"];
+// Distinct, non-red hues (the default pieces already cover black + red), picked
+// by maximum distance from existing pieces so new pieces never echo a hue.
+const PALETTE = ["#3ddc84", "#22d3ee", "#ffb000", "#9d8cff", "#ff2e97", "#1f6feb"];
 const GRID_SIZES: GridSize[] = [3, 5, 7, 9];
 const MAX_PIECES_CAP = 1_000_000;
 
@@ -44,6 +48,51 @@ function sectionLabel(text: string, trailing?: string): HTMLElement {
     el("span", { className: "ds-label" }, [text]),
     ...(trailing ? [el("span", { className: "ds-label cb-section-meta" }, [trailing])] : []),
   ]);
+}
+
+// A dropdown of predefined symmetric movement patterns, each shown with a mini
+// preview. Picking one replaces the piece's grid size + offsets.
+function presetPicker(piece: Piece, onPick: (preset: MovementPreset) => void): HTMLElement {
+  const menu = el("div", { className: "cb-preset-menu" });
+  const trigger = el("button", { type: "button", className: "cb-preset-trigger" }, [
+    el("span", {}, [presetNameFor(piece.gridSize, piece.offsets)]),
+    icon("chevron-down", 13),
+  ]);
+  const wrap = el("div", { className: "cb-preset" }, [trigger, menu]);
+
+  const onDocMouseDown = (e: MouseEvent): void => {
+    if (!wrap.contains(e.target as Node) && !menu.contains(e.target as Node)) close();
+  };
+  function close(): void {
+    wrap.classList.remove("is-open");
+    document.removeEventListener("mousedown", onDocMouseDown);
+    window.removeEventListener("scroll", close, true);
+    window.removeEventListener("resize", close);
+  }
+  function open(): void {
+    // Fixed positioning so the menu escapes the panel's scroll/overflow clip.
+    const rect = trigger.getBoundingClientRect();
+    menu.style.top = `${Math.round(rect.bottom + 4)}px`;
+    menu.style.right = `${Math.round(window.innerWidth - rect.right)}px`;
+    wrap.classList.add("is-open");
+    document.addEventListener("mousedown", onDocMouseDown);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+  }
+
+  for (const preset of MOVEMENT_PRESETS) {
+    const item = el("button", { type: "button", className: "cb-preset-item" }, [
+      miniGrid(preset.gridSize, preset.offsets),
+      el("span", { className: "cb-preset-name" }, [preset.name]),
+    ]);
+    item.addEventListener("click", () => {
+      close();
+      onPick(preset);
+    });
+    menu.append(item);
+  }
+  trigger.addEventListener("click", () => (wrap.classList.contains("is-open") ? close() : open()));
+  return wrap;
 }
 
 export function mountPanel(
@@ -111,11 +160,23 @@ export function mountPanel(
       updatePiece(store, piece.id, { offsets: toggleOffset(piece.offsets, dx, dy) }, onChange),
     );
 
-    const card = el("div", { className: "cb-piece" }, [
-      head,
-      field("Grid", sizes),
-      field("Moves", grid),
+    const preset = presetPicker(piece, (p) =>
+      updatePiece(
+        store,
+        piece.id,
+        { gridSize: p.gridSize, offsets: p.offsets.map(([x, y]) => [x, y] as [number, number]) },
+        onChange,
+      ),
+    );
+    const moves = el("div", { className: "cb-field" }, [
+      el("div", { className: "cb-field-head" }, [
+        el("span", { className: "cb-field-label ds-label" }, ["Moves"]),
+        preset,
+      ]),
+      grid,
     ]);
+
+    const card = el("div", { className: "cb-piece" }, [head, field("Grid", sizes), moves]);
 
     if (strategyKind === "weighted") {
       card.append(
@@ -204,8 +265,10 @@ export function mountPanel(
         icon: "plus",
         variant: "ghost",
         onClick: () => {
-          const used = new Set(store.get().pieces.map((p) => p.color));
-          const color = PALETTE.find((c) => !used.has(c)) ?? "#888888";
+          const color = pickDistinctColor(
+            store.get().pieces.map((p) => p.color),
+            PALETTE,
+          );
           const id = `p${store.get().pieces.length + 1}-${Math.round(performance.now())}`;
           store.set({
             pieces: [...store.get().pieces, { id, color, gridSize: 5, offsets: [], weight: 1 }],

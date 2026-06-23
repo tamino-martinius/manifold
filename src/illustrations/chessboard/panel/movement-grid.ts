@@ -34,3 +34,18 @@ export function movementGrid(
   }
   return grid;
 }
+
+/** A small, read-only preview of a movement pattern (for the preset menu). */
+export function miniGrid(gridSize: GridSize, offsets: [number, number][]): HTMLElement {
+  const active = new Set(offsets.map(([x, y]) => offsetKey(x, y)));
+  const grid = el("div", { className: "cb-mini-grid" });
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+  const r = gridRadius(gridSize);
+  for (let dy = r; dy >= -r; dy--) {
+    for (let dx = -r; dx <= r; dx++) {
+      const cls = dx === 0 && dy === 0 ? "center" : active.has(offsetKey(dx, dy)) ? "on" : "";
+      grid.append(el("span", { className: `cb-mini-cell${cls ? ` ${cls}` : ""}` }));
+    }
+  }
+  return grid;
+}

@@ -82,11 +82,11 @@ export function defaultShapes(): Shape[] {
     },
     {
       id: "s2",
-      name: BEND.name,
+      name: STRAIGHT.name,
       color: "#b45309",
       weight: 1,
-      outDocks: BEND.outDocks,
-      visual: BEND.visual,
+      outDocks: STRAIGHT.outDocks,
+      visual: STRAIGHT.visual,
     },
   ];
 }

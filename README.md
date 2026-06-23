@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/toothpicks/"><img src="docs/previews/toothpicks.png" alt="Toothpick Patterns" width="240"></a> | **[Toothpick Patterns](https://manifold.tamino.dev/toothpicks/)** | Toothpicks sprout at every exposed endpoint, generation by generation, building OEIS&nbsp;[A139250](https://oeis.org/A139250)'s fractal sieve. Growth is pure docking-point logic — each shape is an in-dock plus the out-docks it emits — so you pick which shapes exist and the round-by-round order they're added (colour + weight each, round-robin / weighted), and the structure grows as concentric colour-coded rings. Smoothly-zooming timeline, step one generation at a time, computed in a Web Worker with a progress bar. |
 
 ## Theme
 

@@ -15,9 +15,13 @@ describe("presets", () => {
     expect(presetNameFor(STRAIGHT)).toBe("Straight");
     expect(presetNameFor({ outDocks: [], visual: [] })).toBe("Custom");
   });
-  it("defaultShapes returns Straight + Bend with distinct colors", () => {
+  it("defaultShapes returns two distinct-colored straight rings", () => {
     const shapes = defaultShapes();
-    expect(shapes.map((s) => s.name)).toEqual(["Straight", "Bend"]);
+    // Both default shapes use the Straight geometry so the load view is the
+    // iconic A139250 sieve; the round-robin order paints alternating colored
+    // rings, demonstrating the per-generation mechanic. Distinct colours + ids.
+    expect(shapes.map((s) => s.name)).toEqual(["Straight", "Straight"]);
+    expect(shapes.every((s) => s.outDocks === STRAIGHT.outDocks)).toBe(true);
     expect(shapes[0].color).not.toBe(shapes[1].color);
     expect(new Set(shapes.map((s) => s.id)).size).toBe(2);
   });

@@ -1,6 +1,7 @@
 import "../styles/manifold/styles.css";
 import "./gallery.css";
 import { el } from "../shared/dom";
+import { pageFooter } from "../shared/footer";
 import { icon } from "../shared/icons";
 import { initTheme } from "../shared/theme";
 import { themeToggle } from "../shared/theme-toggle";
@@ -68,7 +69,7 @@ function mount(root: HTMLElement): void {
     grid,
   ]);
 
-  root.append(el("div", { className: "m-page" }, [header(), hero(), main]));
+  root.append(el("div", { className: "m-page" }, [header(), hero(), main, pageFooter()]));
 }
 
 const root = document.getElementById("gallery");

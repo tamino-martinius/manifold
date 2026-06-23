@@ -1,6 +1,7 @@
 import "../../styles/manifold/styles.css";
 import "./toothpicks.css";
 import { el } from "../../shared/dom";
+import { pageFooter } from "../../shared/footer";
 import { icon } from "../../shared/icons";
 import { initTheme } from "../../shared/theme";
 import { themeToggle } from "../../shared/theme-toggle";
@@ -111,6 +112,7 @@ function mount(root: HTMLElement): void {
     el("div", { className: "tp-studio" }, [
       toolbar(),
       el("div", { className: "tp-body" }, [wrap, panelEl]),
+      pageFooter(),
     ]),
   );
 

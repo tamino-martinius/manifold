@@ -8,11 +8,9 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 
 ## Illustrations
 
-- **Chessboard Patterns** — pieces drop onto a counter-clockwise number spiral, each taking the
-  lowest-indexed cell no opposing piece attacks. Watch it fill with an accelerating, smoothly
-  zooming animation (cell 1 stays centered), scrub the timeline, and configure pieces (color,
-  movement grid, weight) and placement order in the studio panel. Scales to 100k pieces — the
-  placement is computed in a Web Worker with a progress bar so the UI never freezes.
+| Preview | Illustration | Description |
+| :-----: | ------------ | ----------- |
+| <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
 
 ## Theme
 
@@ -44,6 +42,7 @@ point the `manifold.tamino.dev` DNS record at GitHub Pages.
 1. Create `src/illustrations/<name>/` with a `main.ts` and a `preview.ts`.
 2. Add `<name>/index.html` at the repo root and register it as an input in `vite.config.ts`.
 3. Add an entry to `src/gallery/registry.ts`.
+4. Drop a preview image in `docs/previews/<name>.png` and add a row to the Illustrations table above.
 
 The Manifold design tokens live in `src/styles/manifold/` — link `styles.css` and use the CSS
 custom properties (`--accent`, `--surface`, `--font-mono`, the `.ds-label`/`.ds-grid-bg`/`.ds-dot-bg`

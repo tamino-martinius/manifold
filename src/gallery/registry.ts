@@ -1,5 +1,6 @@
 import { mountChessboardPreview } from "../illustrations/chessboard/preview";
 import { mountDragonPreview } from "../illustrations/dragon/preview";
+import { mountFordCirclesPreview } from "../illustrations/ford-circles/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 import { mountPascalPreview } from "../illustrations/pascal/preview";
@@ -70,5 +71,13 @@ export const illustrations: Illustration[] = [
       "Toothpicks sprout at every exposed endpoint, generation by generation, forming A139250's fractal sieve. Pick which shapes grow and in which order each round.",
     route: "toothpicks/",
     mountPreview: mountToothpickPreview,
+  },
+  {
+    id: "ford-circles",
+    title: "Ford Circles / Farey",
+    description:
+      "Every reduced fraction becomes a circle kissing the number line and its Farey neighbors — zoom into an infinite fractal of tangent circles.",
+    route: "ford-circles/",
+    mountPreview: mountFordCirclesPreview,
   },
 ];

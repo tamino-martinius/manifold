@@ -14,6 +14,7 @@ export default defineConfig({
         ulam: resolve(__dirname, "ulam/index.html"),
         dragon: resolve(__dirname, "dragon/index.html"),
         toothpicks: resolve(__dirname, "toothpicks/index.html"),
+        "ford-circles": resolve(__dirname, "ford-circles/index.html"),
       },
     },
   },

@@ -65,7 +65,16 @@ describe("registry", () => {
     expect(typeof tp?.mountPreview).toBe("function");
   });
 
-  it("lists the toothpicks illustration last", () => {
-    expect(illustrations[illustrations.length - 1]?.id).toBe("toothpicks");
+  it("includes the ford-circles illustration with required fields", () => {
+    const f = illustrations.find((i) => i.id === "ford-circles");
+    expect(f).toBeDefined();
+    expect(f?.route).toBe("ford-circles/");
+    expect(f?.title.length).toBeGreaterThan(0);
+    expect(f?.description.length).toBeGreaterThan(0);
+    expect(typeof f?.mountPreview).toBe("function");
+  });
+
+  it("lists the ford-circles illustration last", () => {
+    expect(illustrations[illustrations.length - 1]?.id).toBe("ford-circles");
   });
 });

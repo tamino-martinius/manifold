@@ -32,3 +32,15 @@ export function fitCamera(
 export function worldToScreen(cam: Camera, x: number, y: number): { sx: number; sy: number } {
   return { sx: x * cam.scale + cam.offsetX, sy: -y * cam.scale + cam.offsetY };
 }
+
+/**
+ * Frame-rate-independent exponential easing of the camera scale toward a target.
+ * `current <= 0` is the snap sentinel (first frame / animation reset): it returns
+ * the target immediately so the view never zooms in from nothing. `dt` is clamped
+ * so a long stall (e.g. a backgrounded tab) cannot produce a giant jump.
+ */
+export function easeScale(current: number, target: number, dt: number, rate = 8): number {
+  if (current <= 0) return target;
+  const k = 1 - Math.exp(-rate * Math.min(Math.max(dt, 0), 0.1));
+  return current + (target - current) * k;
+}

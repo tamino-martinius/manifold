@@ -1,4 +1,4 @@
-import { fitCamera } from "./camera";
+import { easeScale, fitCamera } from "./camera";
 import { defaultPieces } from "./pieces";
 import { computePlacements } from "./placement";
 import { renderBoard } from "./renderer";
@@ -6,12 +6,14 @@ import { renderBoard } from "./renderer";
 export function mountChessboardPreview(canvas: HTMLCanvasElement): () => void {
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
   const dpr = window.devicePixelRatio || 1;
-  const size = 220;
-  canvas.width = size * dpr;
-  canvas.height = size * dpr;
+  // Square buffer sized to the (square) figure it's displayed in, for crispness.
+  const cssSize = canvas.clientWidth || 280;
+  canvas.width = Math.round(cssSize * dpr);
+  canvas.height = Math.round(cssSize * dpr);
 
   const placements = computePlacements(defaultPieces(), "round-robin", 240);
   let frame = 0;
+  let displayScale = 0;
   let rafId = 0;
   let last = 0;
 
@@ -21,16 +23,26 @@ export function mountChessboardPreview(canvas: HTMLCanvasElement): () => void {
     frame += 60 * dt;
     if (frame > placements.length + 40) {
       frame = 0;
+      displayScale = 0; // snap on loop reset — no rewind-zoom
       last = 0;
     }
     const shown = Math.min(Math.ceil(frame), placements.length);
-    const cam = fitCamera(
+    const target = fitCamera(
       placements.slice(0, shown).map((p) => p.coord),
       canvas.width,
       canvas.height,
       3,
     );
-    renderBoard(ctx, cam, placements, shown, canvas.width, canvas.height);
+    // Same eased zoom as the full illustration (origin-centered, scale only).
+    displayScale = easeScale(displayScale, target.scale, dt);
+    renderBoard(
+      ctx,
+      { scale: displayScale, offsetX: target.offsetX, offsetY: target.offsetY },
+      placements,
+      shown,
+      canvas.width,
+      canvas.height,
+    );
     rafId = requestAnimationFrame(tick);
   };
   rafId = requestAnimationFrame(tick);

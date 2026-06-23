@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fitCamera, worldToScreen } from "./camera";
+import { easeScale, fitCamera, worldToScreen } from "./camera";
 import type { Coord } from "./types";
 
 describe("camera", () => {
@@ -50,5 +50,25 @@ describe("camera", () => {
     const far = worldToScreen(cam, 4, 0);
     expect(far.sx).toBeLessThanOrEqual(200);
     expect(far.sx).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("easeScale", () => {
+  it("snaps to the target when current is the 0 sentinel", () => {
+    expect(easeScale(0, 42, 0.016)).toBe(42);
+    expect(easeScale(-1, 42, 0.016)).toBe(42);
+  });
+
+  it("moves partway toward the target and never overshoots", () => {
+    const next = easeScale(10, 20, 0.016, 8);
+    expect(next).toBeGreaterThan(10);
+    expect(next).toBeLessThan(20);
+  });
+
+  it("clamps dt so a long stall cannot jump past the target", () => {
+    // huge dt is clamped to 0.1s; result stays within [current, target]
+    const next = easeScale(10, 20, 100, 8);
+    expect(next).toBeGreaterThan(10);
+    expect(next).toBeLessThanOrEqual(20);
   });
 });

@@ -1,6 +1,6 @@
 import "./chessboard.css";
 import { createAnimator } from "./animation";
-import { type Camera, fitCamera } from "./camera";
+import { type Camera, easeScale, fitCamera } from "./camera";
 import { mountPanel } from "./panel/panel";
 import { renderBoard } from "./renderer";
 import { createChessboardStore, recomputePlacements } from "./state";
@@ -49,15 +49,9 @@ function mount(root: HTMLElement): void {
     );
 
     const now = performance.now();
-    const dt = lastT === 0 ? 0 : Math.min((now - lastT) / 1000, 0.1);
+    const dt = lastT === 0 ? 0 : (now - lastT) / 1000;
     lastT = now;
-    if (displayScale === 0) {
-      displayScale = target.scale;
-    } else {
-      // Frame-rate-independent exponential smoothing (~0.12s time constant).
-      const k = 1 - Math.exp(-ZOOM_SMOOTH_RATE * dt);
-      displayScale += (target.scale - displayScale) * k;
-    }
+    displayScale = easeScale(displayScale, target.scale, dt, ZOOM_SMOOTH_RATE);
 
     const cam: Camera = {
       scale: displayScale,

@@ -56,6 +56,10 @@ export function computeToothpicks(
         next.push({ x: c.x, y: c.y, dir: c.dir });
       }
     }
+    // Mark EVERY candidate point occupied — including cancelled ones. A point
+    // where two open docks met is now part of the structure, so a later
+    // generation that reaches it must cap there too. Occupying only survivors
+    // would silently break cross-generation capping (and A139250).
     for (const c of candidates) occupied.add(c.key);
     exposed = next;
 

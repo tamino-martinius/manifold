@@ -1,0 +1,62 @@
+/* ============================================================
+   SPACING, RADII, BORDERS, ELEVATION, MOTION, LAYOUT — Manifold
+   4px base grid. Slightly-soft 4px corners + hairline borders.
+   Shadow defaults are tuned for DARK; light overrides live in
+   colors.css under [data-theme="light"].
+   ============================================================ */
+:root {
+  /* ---- Spacing (4px grid) ---- */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ---- Radii (shape language: slightly soft, 4px default) ---- */
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px; /* DEFAULT — buttons, inputs, cards */
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 999px;
+
+  /* ---- Borders (hairlines) ---- */
+  --border-thin: 1px;
+  --border-med: 1.5px;
+  --border-thick: 2px;
+
+  /* ---- Elevation (dark defaults) ---- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.55);
+  --glow-accent: 0 0 0 1px var(--accent-line), 0 0 18px rgba(61, 220, 132, 0.22);
+  --glow-accent-strong: 0 0 24px rgba(61, 220, 132, 0.42);
+
+  /* ---- Motion (crisp, mechanical — no bounce) ---- */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-instant: 80ms;
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
+
+  /* ---- Layout primitives ---- */
+  --sidebar-w: 304px;
+  --rail-w: 56px;
+  --toolbar-h: 52px;
+  --statusbar-h: 30px;
+  --maxw-content: 1240px;
+  --maxw-prose: 68ch;
+}

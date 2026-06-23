@@ -20,12 +20,26 @@ export function fitCamera(
     if (ax > halfX) halfX = ax;
     if (ay > halfY) halfY = ay;
   }
+  return fitFromExtent(halfX, halfY, canvasW, canvasH, paddingCells);
+}
+
+/**
+ * Origin-centered fit from a pre-computed half-extent (max |x|, max |y| of the
+ * shown cells). Lets callers track the extent incrementally instead of
+ * rebuilding a coordinate array each frame. `offsetX/Y` are scale-independent,
+ * so easing the scale never moves cell 1 off the canvas center.
+ */
+export function fitFromExtent(
+  halfX: number,
+  halfY: number,
+  canvasW: number,
+  canvasH: number,
+  paddingCells: number,
+): Camera {
   const pad = paddingCells + 0.5;
   const worldHalfW = halfX + pad;
   const worldHalfH = halfY + pad;
   const scale = Math.min(canvasW / (2 * worldHalfW), canvasH / (2 * worldHalfH));
-  // screen center = canvas center; offset is independent of scale, so easing the
-  // scale never moves the origin. Screen y is flipped (world +y is up).
   return { scale, offsetX: canvasW / 2, offsetY: canvasH / 2 };
 }
 

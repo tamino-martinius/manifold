@@ -18,3 +18,16 @@ export type Placement = {
   pieceId: string;
   color: string;
 };
+
+/**
+ * Columnar form of the placement sequence, used for rendering and for
+ * zero-copy transfer out of the compute worker. `colorIndex[i]` indexes
+ * into `colors` (the distinct piece colors in first-seen order).
+ */
+export type PlacedData = {
+  xs: Int32Array;
+  ys: Int32Array;
+  colorIndex: Uint8Array;
+  colors: string[];
+  count: number;
+};

@@ -1,7 +1,6 @@
 import { type Store, createStore } from "../../shared/store";
 import { defaultPieces } from "./pieces";
-import { computePlacements } from "./placement";
-import type { Piece, Placement, StrategyKind } from "./types";
+import type { Piece, PlacedData, StrategyKind } from "./types";
 
 export type ChessboardState = {
   pieces: Piece[];
@@ -10,26 +9,32 @@ export type ChessboardState = {
   frame: number;
   playing: boolean;
   speed: number;
-  placements: Placement[];
+  /** Columnar placement data; `count` is 0 until the first compute finishes. */
+  placed: PlacedData;
+  /** True while the worker is (re)computing placements. */
+  loading: boolean;
+  /** Compute progress, 0..1. */
+  progress: number;
+};
+
+export const EMPTY_PLACED: PlacedData = {
+  xs: new Int32Array(0),
+  ys: new Int32Array(0),
+  colorIndex: new Uint8Array(0),
+  colors: [],
+  count: 0,
 };
 
 export function createChessboardStore(): Store<ChessboardState> {
-  const pieces = defaultPieces();
-  const strategy: StrategyKind = "round-robin";
-  const maxPieces = 1200;
   return createStore<ChessboardState>({
-    pieces,
-    strategy,
-    maxPieces,
+    pieces: defaultPieces(),
+    strategy: "round-robin",
+    maxPieces: 2000,
     frame: 0,
     playing: true,
     speed: 30,
-    placements: computePlacements(pieces, strategy, maxPieces),
+    placed: EMPTY_PLACED,
+    loading: true,
+    progress: 0,
   });
-}
-
-export function recomputePlacements(store: Store<ChessboardState>): void {
-  const { pieces, strategy, maxPieces, frame } = store.get();
-  const placements = computePlacements(pieces, strategy, maxPieces);
-  store.set({ placements, frame: Math.min(frame, placements.length) });
 }

@@ -1,23 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { createChessboardStore, recomputePlacements } from "./state";
+import { createChessboardStore } from "./state";
 
 describe("chessboard state", () => {
-  it("initializes with default pieces and precomputed placements", () => {
+  it("initializes with default pieces, auto-play, and empty placed data pending compute", () => {
     const store = createChessboardStore();
     const s = store.get();
     expect(s.pieces.length).toBe(2);
     expect(s.strategy).toBe("round-robin");
-    expect(s.placements.length).toBe(s.maxPieces);
     expect(s.frame).toBe(0);
-  });
-
-  it("recompute clamps frame within new placement bounds", () => {
-    const store = createChessboardStore();
-    store.set({ frame: 999999 });
-    store.set({ maxPieces: 50 });
-    recomputePlacements(store);
-    const s = store.get();
-    expect(s.placements.length).toBe(50);
-    expect(s.frame).toBeLessThanOrEqual(50);
+    expect(s.playing).toBe(true);
+    // Placement data is computed asynchronously by the worker, so it starts empty.
+    expect(s.placed.count).toBe(0);
+    expect(s.loading).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defaultPieces, knightOffsets } from "./pieces";
-import { computePlacements } from "./placement";
+import { computePlacements, packPlacements } from "./placement";
 import { coordToIndex, indexToCoord } from "./spiral";
 import type { Piece, Placement } from "./types";
 
@@ -73,5 +73,29 @@ describe("computePlacements", () => {
 
   it("returns empty for no pieces", () => {
     expect(computePlacements([], "round-robin", 10)).toEqual([]);
+  });
+
+  it("reports progress and finishes at the total", () => {
+    const seen: number[] = [];
+    computePlacements(defaultPieces(), "round-robin", 30, (done) => seen.push(done));
+    expect(seen.at(-1)).toBe(30);
+    expect(seen.every((n) => n >= 0 && n <= 30)).toBe(true);
+  });
+});
+
+describe("packPlacements", () => {
+  it("packs coords and dedupes colors into an index", () => {
+    const placements = computePlacements(defaultPieces(), "round-robin", 6);
+    const packed = packPlacements(placements);
+    expect(packed.count).toBe(6);
+    expect(packed.xs.length).toBe(6);
+    expect(packed.ys.length).toBe(6);
+    // Two default colors → palette of 2, indices in {0,1}.
+    expect(packed.colors.length).toBe(2);
+    placements.forEach((p, i) => {
+      expect(packed.xs[i]).toBe(p.coord.x);
+      expect(packed.ys[i]).toBe(p.coord.y);
+      expect(packed.colors[packed.colorIndex[i]]).toBe(p.color);
+    });
   });
 });

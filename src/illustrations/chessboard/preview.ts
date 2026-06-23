@@ -1,6 +1,6 @@
-import { easeScale, fitCamera } from "./camera";
+import { easeScale, fitFromExtent } from "./camera";
 import { defaultPieces } from "./pieces";
-import { computePlacements } from "./placement";
+import { computePlacements, packPlacements } from "./placement";
 import { renderBoard } from "./renderer";
 
 export function mountChessboardPreview(canvas: HTMLCanvasElement): () => void {
@@ -11,7 +11,7 @@ export function mountChessboardPreview(canvas: HTMLCanvasElement): () => void {
   canvas.width = Math.round(cssSize * dpr);
   canvas.height = Math.round(cssSize * dpr);
 
-  const placements = computePlacements(defaultPieces(), "round-robin", 240);
+  const placed = packPlacements(computePlacements(defaultPieces(), "round-robin", 240));
   let frame = 0;
   let displayScale = 0;
   let rafId = 0;
@@ -21,24 +21,26 @@ export function mountChessboardPreview(canvas: HTMLCanvasElement): () => void {
     const dt = last === 0 ? 0 : (now - last) / 1000;
     last = now;
     frame += 60 * dt;
-    if (frame > placements.length + 40) {
+    if (frame > placed.count + 40) {
       frame = 0;
       displayScale = 0; // snap on loop reset — no rewind-zoom
       last = 0;
     }
-    const shown = Math.min(Math.ceil(frame), placements.length);
-    const target = fitCamera(
-      placements.slice(0, shown).map((p) => p.coord),
-      canvas.width,
-      canvas.height,
-      3,
-    );
-    // Same eased zoom as the full illustration (origin-centered, scale only).
+    const shown = Math.min(Math.ceil(frame), placed.count);
+    let halfX = 0;
+    let halfY = 0;
+    for (let i = 0; i < shown; i++) {
+      const ax = Math.abs(placed.xs[i]);
+      const ay = Math.abs(placed.ys[i]);
+      if (ax > halfX) halfX = ax;
+      if (ay > halfY) halfY = ay;
+    }
+    const target = fitFromExtent(halfX, halfY, canvas.width, canvas.height, 3);
     displayScale = easeScale(displayScale, target.scale, dt);
     renderBoard(
       ctx,
       { scale: displayScale, offsetX: target.offsetX, offsetY: target.offsetY },
-      placements,
+      placed,
       shown,
       canvas.width,
       canvas.height,

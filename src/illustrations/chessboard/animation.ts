@@ -1,9 +1,7 @@
 export type AnimatorOptions = {
   isPlaying(): boolean;
-  getSpeed(): number;
-  getFrame(): number;
-  getMax(): number;
-  setFrame(f: number): void;
+  /** Advance the animation by `dt` seconds (consumer decides the rate curve). */
+  onTick(dt: number): void;
   render(): void;
 };
 
@@ -16,10 +14,7 @@ export function createAnimator(opts: AnimatorOptions): { start(): void; stop(): 
     if (!running) return;
     const dt = last === 0 ? 0 : (now - last) / 1000;
     last = now;
-    if (opts.isPlaying()) {
-      const next = opts.getFrame() + opts.getSpeed() * dt;
-      opts.setFrame(Math.min(next, opts.getMax()));
-    }
+    if (opts.isPlaying()) opts.onTick(dt);
     opts.render();
     rafId = requestAnimationFrame(tick);
   };

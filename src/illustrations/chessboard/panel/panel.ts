@@ -1,6 +1,6 @@
 import { clear, el } from "../../../shared/dom";
-import type { Store } from "../../../shared/store";
 import { icon } from "../../../shared/icons";
+import type { Store } from "../../../shared/store";
 import { clampOffsets } from "../pieces";
 import type { ChessboardState } from "../state";
 import type { GridSize, Piece, StrategyKind } from "../types";
@@ -49,7 +49,7 @@ export function mountPanel(
 
   const syncLive = (s: ChessboardState): void => {
     if (scrubEl && document.activeElement !== scrubEl) {
-      scrubEl.max = String(s.placements.length);
+      scrubEl.max = String(s.placed.count);
       scrubEl.value = String(Math.round(s.frame));
     }
     if (playBtn) setPlayContent(playBtn, s.playing);
@@ -137,14 +137,14 @@ export function mountPanel(
         const st = store.get();
         store.set({
           playing: false,
-          frame: Math.min(Math.floor(st.frame) + 1, st.placements.length),
+          frame: Math.min(Math.floor(st.frame) + 1, st.placed.count),
         });
       },
     });
 
     scrubEl = mSlider({
       min: 0,
-      max: s.placements.length,
+      max: s.placed.count,
       value: Math.round(s.frame),
       onInput: (v) => store.set({ playing: false, frame: v }),
     });

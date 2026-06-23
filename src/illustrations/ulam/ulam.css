@@ -1,0 +1,112 @@
+/* Ulam / prime spiral — reuses the chessboard studio chrome (the cb-* classes
+   from chessboard.css). Only the highlight-mode picker and the custom-quadratic
+   inputs are specific to this illustration. */
+
+/* Highlight-mode picker: a wrapping pill grid (more modes than fit one row). */
+.ul-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+  padding: 2px;
+  background: var(--bg-sunken);
+  border: var(--border-thin) solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.ul-mode {
+  padding: 6px 4px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-faint);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.ul-mode:hover {
+  color: var(--text);
+}
+.ul-mode.is-active {
+  color: var(--accent);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Faint caption under the Highlight picker. */
+.ul-caption {
+  color: var(--text-faint);
+  text-transform: none;
+  letter-spacing: var(--tracking-normal);
+}
+
+/* Custom a,b,c inputs: a tight three-column row, each with a vertical chevron
+   stepper (compact enough that three fit inside the sidebar). */
+.ul-quad {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-2);
+}
+/* Let the grid tracks shrink below the inputs' intrinsic width (a text input's
+   default size is ~20ch); without this the three columns overflow the sidebar. */
+.ul-quad > * {
+  min-width: 0;
+}
+.ul-quad-row {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+}
+.ul-quad-input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 4px 0 8px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: var(--border-thin) solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.ul-quad-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+.ul-spinner {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.ul-spin {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 14px;
+  padding: 0;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  border: var(--border-thin) solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.ul-spin:hover {
+  color: var(--accent);
+  border-color: var(--accent-line);
+}
+.ul-spin--up svg {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ul-mode,
+  .ul-spin {
+    transition: none;
+  }
+}

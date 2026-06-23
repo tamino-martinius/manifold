@@ -115,18 +115,19 @@ export const VEE: ShapePreset = {
   ],
 };
 
-// D-toothpick (A194700, inspired-by): one orthogonal arm + two diagonal arms.
+// D-toothpick (A194700, inspired-by): a forward orthogonal arm + two diagonal
+// arms (the orthogonal/diagonal mix that gives the D its name).
 export const DEE: ShapePreset = {
   name: "D",
   outDocks: [
-    { at: pt(0, 0, 1, 0), dir: N },
+    { at: pt(1, 0, 0, 0), dir: E },
     { at: pt(0, 1, 0, 0), dir: NE },
-    { at: pt(0, 0, 0, 1), dir: NW },
+    { at: pt(0, 0, 0, -1), dir: SE },
   ],
   visual: [
-    { a: O, b: pt(0, 0, 1, 0) },
+    { a: O, b: pt(1, 0, 0, 0) },
     { a: O, b: pt(0, 1, 0, 0) },
-    { a: O, b: pt(0, 0, 0, 1) },
+    { a: O, b: pt(0, 0, 0, -1) },
   ],
 };
 

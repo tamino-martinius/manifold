@@ -74,7 +74,16 @@ describe("registry", () => {
     expect(typeof f?.mountPreview).toBe("function");
   });
 
-  it("lists the ford-circles illustration last", () => {
-    expect(illustrations[illustrations.length - 1]?.id).toBe("ford-circles");
+  it("includes the prime-spiral illustration with required fields", () => {
+    const spiral = illustrations.find((i) => i.id === "prime-spiral");
+    expect(spiral).toBeDefined();
+    expect(spiral?.route).toBe("prime-spiral/");
+    expect(spiral?.title.length).toBeGreaterThan(0);
+    expect(spiral?.description.length).toBeGreaterThan(0);
+    expect(typeof spiral?.mountPreview).toBe("function");
+  });
+
+  it("lists the prime-spiral illustration last", () => {
+    expect(illustrations[illustrations.length - 1]?.id).toBe("prime-spiral");
   });
 });

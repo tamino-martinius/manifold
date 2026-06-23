@@ -4,6 +4,7 @@ import { mountFordCirclesPreview } from "../illustrations/ford-circles/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 import { mountPascalPreview } from "../illustrations/pascal/preview";
+import { mountPrimeSpiralPreview } from "../illustrations/prime-spiral/preview";
 import { mountToothpickPreview } from "../illustrations/toothpicks/preview";
 import { mountUlamPreview } from "../illustrations/ulam/preview";
 
@@ -79,5 +80,13 @@ export const illustrations: Illustration[] = [
       "Every reduced fraction becomes a circle kissing the number line and its Farey neighbors — zoom into an infinite fractal of tangent circles.",
     route: "ford-circles/",
     mountPreview: mountFordCirclesPreview,
+  },
+  {
+    id: "prime-spiral",
+    title: "Prime Spiral (Polar)",
+    description:
+      "Each prime plotted at polar (r=n, θ=n radians); zoom out and the primes organize into ~6, then ~44 Archimedean arms.",
+    route: "prime-spiral/",
+    mountPreview: mountPrimeSpiralPreview,
   },
 ];

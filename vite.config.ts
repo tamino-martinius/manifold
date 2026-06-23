@@ -15,6 +15,7 @@ export default defineConfig({
         dragon: resolve(__dirname, "dragon/index.html"),
         toothpicks: resolve(__dirname, "toothpicks/index.html"),
         "ford-circles": resolve(__dirname, "ford-circles/index.html"),
+        "prime-spiral": resolve(__dirname, "prime-spiral/index.html"),
       },
     },
   },

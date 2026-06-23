@@ -73,7 +73,13 @@ export function mSegmented<T extends string>(
       { type: "button", className: `cb-segment${opt.value === value ? " is-active" : ""}` },
       [opt.label],
     );
-    seg.addEventListener("click", () => onChange(opt.value));
+    seg.addEventListener("click", () => {
+      // Self-select so live (non-structural) toggles reflect immediately even
+      // when the panel doesn't re-render; structural ones rebuild regardless.
+      for (const child of root.children) child.classList.remove("is-active");
+      seg.classList.add("is-active");
+      onChange(opt.value);
+    });
     root.append(seg);
   }
   return root;

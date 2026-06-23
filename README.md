@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/collatz/"><img src="docs/previews/collatz.png" alt="Collatz Coral" width="240"></a> | **[Collatz Coral](https://manifold.tamino.dev/collatz/)** | Thousands of 3n+1 trajectories grown from a shared root into one organic branching tree. The trajectories are deduped into the shared **Collatz tree**, so each edge is drawn once and weighted by how many seeds flow through it — bright, thick trunks; faint, thin tips. Two turn-angle knobs (θ&nbsp;even / θ&nbsp;odd) morph it live between a tight fern and a sprawling coral; a bounds-fit camera eases to reframe each shape. Scrub the ring-by-ring depth reveal, with solid or depth-gradient colour. Scales to **50,000** seeds, rebuilt synchronously on every change. |
 
 ## Theme
 

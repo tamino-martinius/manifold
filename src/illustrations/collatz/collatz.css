@@ -1,0 +1,11 @@
+/* Collatz coral studio — reuses the chessboard `cb-` studio chrome (imported in
+   main.ts); this file only adds the collatz-specific bits. */
+
+/* Live numeric readout next to a slider's label (θ, segment length, opacity). */
+.co-readout {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent);
+}

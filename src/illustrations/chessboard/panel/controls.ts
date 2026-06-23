@@ -1,5 +1,6 @@
 // Small Manifold-styled control builders for the studio panel (vanilla TS).
 import { el } from "../../../shared/dom";
+import { groupThousands, parseGrouped } from "../../../shared/format";
 import { type IconName, icon } from "../../../shared/icons";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
@@ -88,13 +89,14 @@ export function mNumber(opts: {
 }): HTMLElement {
   const stepFor = (v: number): number =>
     typeof opts.step === "function" ? opts.step(v) : (opts.step ?? 1);
+  // Text input (not type=number) so the displayed value can carry thousands
+  // separators; `inputmode=numeric` keeps the mobile keypad numeric.
   const input = el("input", {
-    type: "number",
+    type: "text",
+    inputmode: "numeric",
     className: "cb-number-input",
-    value: String(opts.value),
+    value: groupThousands(opts.value),
   }) as HTMLInputElement;
-  if (opts.min !== undefined) input.min = String(opts.min);
-  if (opts.max !== undefined) input.max = String(opts.max);
 
   const clamp = (v: number): number => {
     let n = Number.isFinite(v) ? v : (opts.min ?? 0);
@@ -102,22 +104,23 @@ export function mNumber(opts: {
     if (opts.max !== undefined) n = Math.min(opts.max, n);
     return n;
   };
+  const current = (): number => parseGrouped(input.value);
   const commit = (v: number): void => {
     const n = clamp(v);
-    input.value = String(n);
+    input.value = groupThousands(n);
     opts.onChange(n);
   };
-  input.addEventListener("change", () => commit(Number(input.value)));
+  input.addEventListener("change", () => commit(current()));
 
   return el("div", { className: "cb-number" }, [
     mIconButton("minus", {
       title: "Decrease",
-      onClick: () => commit(Number(input.value) - stepFor(Number(input.value))),
+      onClick: () => commit(current() - stepFor(current())),
     }),
     input,
     mIconButton("plus", {
       title: "Increase",
-      onClick: () => commit(Number(input.value) + stepFor(Number(input.value))),
+      onClick: () => commit(current() + stepFor(current())),
     }),
   ]);
 }

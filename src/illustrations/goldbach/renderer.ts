@@ -1,3 +1,4 @@
+import { groupThousands } from "../../shared/format";
 import { type ChartDims, chartToScreen, xTicks, yTicks } from "./chart";
 import type { GoldbachData } from "./goldbach";
 import type { ColorBy } from "./state";
@@ -53,15 +54,6 @@ function bucketColors(colorBy: ColorBy): string[] {
   return [b.amber, b.cyan, b.violet];
 }
 
-function formatTickX(value: number): string {
-  if (value === 0) return "0";
-  if (value >= 1000) {
-    const k = value / 1000;
-    return `${Number.isInteger(k) ? k : k.toFixed(1)}k`;
-  }
-  return String(value);
-}
-
 function drawAxes(ctx: CanvasRenderingContext2D, d: ChartDims, dpr: number): void {
   const line = cssVar("--line-strong") || "#2a343a";
   const faint = cssVar("--text-faint") || "#6f7c83";
@@ -91,7 +83,7 @@ function drawAxes(ctx: CanvasRenderingContext2D, d: ChartDims, dpr: number): voi
     ctx.moveTo(t.sx, yBottom);
     ctx.lineTo(t.sx, yBottom + tickLen);
     ctx.stroke();
-    ctx.fillText(formatTickX(t.value), t.sx, yBottom + tickLen + 2 * dpr);
+    ctx.fillText(groupThousands(t.value), t.sx, yBottom + tickLen + 2 * dpr);
   }
 
   // y ticks + labels (skip 0).
@@ -103,7 +95,7 @@ function drawAxes(ctx: CanvasRenderingContext2D, d: ChartDims, dpr: number): voi
     ctx.moveTo(x0 - tickLen, t.sy);
     ctx.lineTo(x0, t.sy);
     ctx.stroke();
-    ctx.fillText(String(t.value), x0 - tickLen - 3 * dpr, t.sy);
+    ctx.fillText(groupThousands(t.value), x0 - tickLen - 3 * dpr, t.sy);
   }
 
   // Axis titles.

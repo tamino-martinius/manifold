@@ -75,9 +75,22 @@ function presetPicker(piece: Piece, onPick: (preset: MovementPreset) => void): H
   }
   function open(): void {
     // Fixed positioning so the menu escapes the panel's scroll/overflow clip.
+    // Flip above the trigger when there isn't room below, and cap the height to
+    // the available space so the last items always stay on screen.
     const rect = trigger.getBoundingClientRect();
-    menu.style.top = `${Math.round(rect.bottom + 4)}px`;
+    const margin = 8;
+    const spaceBelow = window.innerHeight - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
     menu.style.right = `${Math.round(window.innerWidth - rect.right)}px`;
+    if (spaceBelow >= 240 || spaceBelow >= spaceAbove) {
+      menu.style.top = `${Math.round(rect.bottom + 4)}px`;
+      menu.style.bottom = "auto";
+      menu.style.maxHeight = `${Math.max(140, Math.floor(spaceBelow))}px`;
+    } else {
+      menu.style.bottom = `${Math.round(window.innerHeight - rect.top + 4)}px`;
+      menu.style.top = "auto";
+      menu.style.maxHeight = `${Math.max(140, Math.floor(spaceAbove))}px`;
+    }
     wrap.classList.add("is-open");
     document.addEventListener("mousedown", onDocMouseDown);
     window.addEventListener("scroll", onScroll, true);

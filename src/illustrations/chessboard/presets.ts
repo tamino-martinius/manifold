@@ -128,8 +128,86 @@ export const MOVEMENT_PRESETS: MovementPreset[] = [
       [3, 3],
     ]),
   },
+  {
+    name: "Bison",
+    gridSize: 7,
+    offsets: sym([
+      [1, 2],
+      [1, 3],
+    ]),
+  },
+  {
+    name: "Spider",
+    gridSize: 5,
+    offsets: sym([
+      [2, 0],
+      [1, 1],
+      [1, 2],
+    ]),
+  },
   { name: "Giraffe", gridSize: 9, offsets: sym([[1, 4]]) },
   { name: "Antelope", gridSize: 9, offsets: sym([[3, 4]]) },
+  {
+    name: "Giraffe+Antelope",
+    gridSize: 9,
+    offsets: sym([
+      [1, 4],
+      [3, 4],
+    ]),
+  },
+  {
+    name: "Star",
+    gridSize: 9,
+    offsets: sym([
+      [1, 2],
+      [1, 4],
+    ]),
+  },
+  {
+    name: "Cross 9",
+    gridSize: 9,
+    offsets: sym([
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [4, 0],
+    ]),
+  },
+  {
+    name: "Saltire 9",
+    gridSize: 9,
+    offsets: sym([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [4, 4],
+    ]),
+  },
+  {
+    name: "Ring 9",
+    gridSize: 9,
+    offsets: sym([
+      [4, 0],
+      [4, 1],
+      [4, 2],
+      [4, 3],
+      [4, 4],
+    ]),
+  },
+  {
+    name: "Diamond 9",
+    gridSize: 9,
+    offsets: sym([
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [4, 0],
+      [1, 1],
+      [2, 1],
+      [3, 1],
+      [2, 2],
+    ]),
+  },
 ];
 
 /** Name of the preset matching these offsets+grid, or "Custom" if none. */

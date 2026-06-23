@@ -1,4 +1,4 @@
-import { pointToScreen } from "../geometry";
+import { UNIT, pointToScreen } from "../geometry";
 import type { Dir, DockSpec, Segment } from "../types";
 
 const SVGNS = "http://www.w3.org/2000/svg";
@@ -37,20 +37,11 @@ function svgEl(tag: string, attrs: Record<string, string | number>): SVGElement 
   return node;
 }
 
-// Unit screen vector for a direction (E=0 … SE=7), for the out-dock stub.
-const SQ = Math.SQRT1_2;
-const DIR_SCREEN: [number, number][] = [
-  [1, 0], // E
-  [SQ, SQ], // NE
-  [0, 1], // N
-  [-SQ, SQ], // NW
-  [-1, 0], // W
-  [-SQ, -SQ], // SW
-  [0, -1], // S
-  [SQ, -SQ], // SE
-];
+// Unit screen vector for a direction, for the out-dock stub. Derived from the
+// lattice itself so geometry.ts stays the single source of direction knowledge.
 function dirVec(dir: Dir): [number, number] {
-  return DIR_SCREEN[dir];
+  const v = pointToScreen(UNIT[dir]);
+  return [v.x, v.y];
 }
 
 /**

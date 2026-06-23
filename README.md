@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/goldbach/"><img src="docs/previews/goldbach.png" alt="Goldbach's Comet" width="240"></a> | **[Goldbach's Comet](https://manifold.tamino.dev/goldbach/)** | Every even number `E` scattered against `g(E)` — how many ways it splits into two primes ([OEIS&nbsp;A045917](https://oeis.org/A045917)). Low-alpha dots accumulate into the glowing comet whose lower edge **never reaches zero** (Goldbach made visible). Sweep the reveal left→right, colour by band (`E mod 6` / `3 | E`) to expose the sub-bands, and tune point size/alpha. Scales to **200,000**, computed synchronously up to 50k and in a Web Worker beyond. |
 
 ## Theme
 

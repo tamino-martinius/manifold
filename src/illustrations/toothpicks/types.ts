@@ -35,7 +35,8 @@ export type Instance = { generation: number; color: string; segments: Segment[] 
  * arrays are Float32Array. `instanceIndex[i]` is the ascending 0-based ordinal of
  * the toothpick the segment belongs to; `colorIndex[i]` indexes `colors`. `count`
  * is the number of instances (= A139250(maxGen) for Straight). `genEnds[g]` is the
- * cumulative instance count through generation g (Step-one-generation button).
+ * cumulative instance count through generation g, and
+ * `genSegEnds[g]` the cumulative segment count (Step-one-generation + frontier slice).
  */
 export type PlacedData = {
   x1: Float32Array;
@@ -48,4 +49,5 @@ export type PlacedData = {
   count: number;
   segCount: number;
   genEnds: number[];
+  genSegEnds: number[];
 };

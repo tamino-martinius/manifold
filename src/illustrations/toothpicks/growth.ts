@@ -1,10 +1,32 @@
 import { addPt, pointKey, pointToScreen, rotateDir, rotatePt } from "./geometry";
 import { createPicker } from "./strategy";
-import type { DockSpec, Instance, PlacedData, Segment, Shape, StrategyKind } from "./types";
+import type { DockSpec, Instance, PlacedData, Pt, Segment, Shape, StrategyKind } from "./types";
 
-// Safety ceiling on total placed toothpicks (matches the chessboard render
-// envelope). A generation that would exceed it truncates the structure.
+// Safety ceiling on total placed toothpicks (matches the chessboard render envelope).
 export const MAX_INSTANCES = 2_000_000;
+
+/**
+ * The lattice points a segment a→b covers, inclusive. Every preset segment runs
+ * along a single 8-direction, so the delta is k·UNIT[d] (exactly one nonzero
+ * component); k = |Δp|+|Δq|+|Δr|+|Δs| and the points are a + i·(delta/k).
+ */
+export function segmentPoints(a: Pt, b: Pt): Pt[] {
+  const dp = b.p - a.p;
+  const dq = b.q - a.q;
+  const dr = b.r - a.r;
+  const ds = b.s - a.s;
+  const k = Math.abs(dp) + Math.abs(dq) + Math.abs(dr) + Math.abs(ds);
+  if (k === 0) return [a];
+  const up = dp / k;
+  const uq = dq / k;
+  const ur = dr / k;
+  const us = ds / k;
+  const pts: Pt[] = [];
+  for (let i = 0; i <= k; i++) {
+    pts.push({ p: a.p + up * i, q: a.q + uq * i, r: a.r + ur * i, s: a.s + us * i });
+  }
+  return pts;
+}
 
 type Candidate = { dock: DockSpec; key: number };
 
@@ -18,9 +40,11 @@ export function computeToothpicks(
 
   const picker = createPicker(strategy, shapes);
   const instances: Instance[] = [];
-  const occupied = new Set<number>();
-  // Seed: one exposed dock at the origin facing East, so a Straight first shape
-  // renders as the classic single vertical toothpick of stage 1.
+  // Per lattice point: how many toothpick ENDPOINTS sit there, and whether any
+  // toothpick BODY passes through it. An open end is free only if it is the sole
+  // endpoint at its point and no body crosses it.
+  const endpointCount = new Map<number, number>();
+  const interior = new Set<number>();
   let exposed: DockSpec[] = [{ at: { p: 0, q: 0, r: 0, s: 0 }, dir: 0 }];
 
   for (let gen = 0; gen < maxGen; gen++) {
@@ -28,14 +52,20 @@ export function computeToothpicks(
     const shape = picker.next(); // one shape for the whole generation
     const candidates: Candidate[] = [];
 
+    // Place every shape first (recording endpoints + interior) so that siblings
+    // within this generation also count when we test the candidates below.
     for (const dock of exposed) {
-      occupied.add(pointKey(dock.at)); // in-dock consumed → internal
       const segments: Segment[] = [];
       for (const v of shape.visual) {
-        segments.push({
-          a: addPt(dock.at, rotatePt(v.a, dock.dir)),
-          b: addPt(dock.at, rotatePt(v.b, dock.dir)),
-        });
+        const a = addPt(dock.at, rotatePt(v.a, dock.dir));
+        const b = addPt(dock.at, rotatePt(v.b, dock.dir));
+        segments.push({ a, b });
+        const aKey = pointKey(a);
+        const bKey = pointKey(b);
+        endpointCount.set(aKey, (endpointCount.get(aKey) ?? 0) + 1);
+        endpointCount.set(bKey, (endpointCount.get(bKey) ?? 0) + 1);
+        const pts = segmentPoints(a, b);
+        for (let i = 1; i < pts.length - 1; i++) interior.add(pointKey(pts[i]));
       }
       instances.push({ generation: gen, color: shape.color, segments });
       for (const od of shape.outDocks) {
@@ -44,19 +74,12 @@ export function computeToothpicks(
       }
     }
 
-    // Cap: a candidate survives only if it is the unique claim on its lattice
-    // point AND that point is not already occupied. Coincident open docks cancel.
-    const tally = new Map<number, number>();
-    for (const c of candidates) tally.set(c.key, (tally.get(c.key) ?? 0) + 1);
+    // An out-dock stays exposed iff it is the sole toothpick endpoint at its point
+    // AND no toothpick body passes through it — caps at a junction OR mid-body.
     const next: DockSpec[] = [];
     for (const c of candidates) {
-      if (tally.get(c.key) === 1 && !occupied.has(c.key)) next.push(c.dock);
+      if (endpointCount.get(c.key) === 1 && !interior.has(c.key)) next.push(c.dock);
     }
-    // Mark EVERY candidate point occupied — including cancelled ones. A point
-    // where two open docks met is now part of the structure, so a later
-    // generation that reaches it must cap there too. Occupying only survivors
-    // would silently break cross-generation capping (and A139250).
-    for (const c of candidates) occupied.add(c.key);
     exposed = next;
 
     onProgress?.(gen + 1);
@@ -81,6 +104,7 @@ export function packToothpicks(instances: Instance[]): PlacedData {
   const colors: string[] = [];
   const colorMap = new Map<string, number>();
   const genEnds: number[] = [];
+  const genSegEnds: number[] = [];
 
   let si = 0;
   for (let k = 0; k < instances.length; k++) {
@@ -103,6 +127,7 @@ export function packToothpicks(instances: Instance[]): PlacedData {
       si++;
     }
     genEnds[inst.generation] = k + 1; // cumulative instances through this gen
+    genSegEnds[inst.generation] = si; // cumulative segments through this gen
   }
 
   return {
@@ -116,5 +141,6 @@ export function packToothpicks(instances: Instance[]): PlacedData {
     count: instances.length,
     segCount,
     genEnds,
+    genSegEnds,
   };
 }

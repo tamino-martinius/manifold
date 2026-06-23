@@ -28,6 +28,7 @@ globalThis.addEventListener("message", (event) => {
       count: packed.count,
       segCount: packed.segCount,
       genEnds: packed.genEnds,
+      genSegEnds: packed.genSegEnds,
     },
     [
       packed.x1.buffer,

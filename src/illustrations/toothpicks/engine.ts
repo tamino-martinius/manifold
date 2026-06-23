@@ -16,6 +16,7 @@ type DoneMessage = {
   count: number;
   segCount: number;
   genEnds: number[];
+  genSegEnds: number[];
 };
 type ProgressMessage = { type: "progress"; token: number; done: number; total: number };
 type WorkerMessage = DoneMessage | ProgressMessage;
@@ -55,6 +56,7 @@ export function createToothpickEngine(store: Store<ToothpickState>): {
           count: msg.count,
           segCount: msg.segCount,
           genEnds: msg.genEnds,
+          genSegEnds: msg.genSegEnds,
         });
       }
     };

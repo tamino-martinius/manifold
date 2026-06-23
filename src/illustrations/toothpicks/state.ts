@@ -28,6 +28,7 @@ export const EMPTY_PLACED: PlacedData = {
   count: 0,
   segCount: 0,
   genEnds: [],
+  genSegEnds: [],
 };
 
 export function createToothpickStore(): Store<ToothpickState> {

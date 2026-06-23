@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/hilbert/"><img src="docs/previews/hilbert.png" alt="Hilbert Curve" width="240"></a> | **[Hilbert Curve](https://manifold.tamino.dev/hilbert/)** | A single continuous, non-crossing path that fills a 2<sup>k</sup>&nbsp;×&nbsp;2<sup>k</sup> grid while keeping 1-D-close indices 2-D-close — **locality made visible**. Step the order through k&nbsp;=&nbsp;1..9 (the curve recursively quadruples), scrub the draw along the path, and choose a spectral **gradient-along-path** (a smooth 1-D rainbow that stays smooth in 2-D — no long-range colour jumps) or a clean **solid** line. Generated synchronously up to **262,144** points. |
 
 ## Theme
 

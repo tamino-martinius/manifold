@@ -10,4 +10,13 @@ describe("registry", () => {
     expect(chess?.description.length).toBeGreaterThan(0);
     expect(typeof chess?.mountPreview).toBe("function");
   });
+
+  it("includes the hilbert illustration with required fields", () => {
+    const hilbert = illustrations.find((i) => i.id === "hilbert");
+    expect(hilbert).toBeDefined();
+    expect(hilbert?.route).toBe("hilbert/");
+    expect(hilbert?.title.length).toBeGreaterThan(0);
+    expect(hilbert?.description.length).toBeGreaterThan(0);
+    expect(typeof hilbert?.mountPreview).toBe("function");
+  });
 });

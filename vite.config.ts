@@ -12,6 +12,7 @@ export default defineConfig({
         goldbach: resolve(__dirname, "goldbach/index.html"),
         pascal: resolve(__dirname, "pascal/index.html"),
         ulam: resolve(__dirname, "ulam/index.html"),
+        dragon: resolve(__dirname, "dragon/index.html"),
       },
     },
   },

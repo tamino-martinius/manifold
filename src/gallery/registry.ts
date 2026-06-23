@@ -1,4 +1,5 @@
 import { mountChessboardPreview } from "../illustrations/chessboard/preview";
+import { mountDragonPreview } from "../illustrations/dragon/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 import { mountPascalPreview } from "../illustrations/pascal/preview";
@@ -52,5 +53,13 @@ export const illustrations: Illustration[] = [
       "The integers spiral out from the center; primes light up and resolve into diagonal streaks traced by prime-rich quadratics like n²+n+41.",
     route: "ulam/",
     mountPreview: mountUlamPreview,
+  },
+  {
+    id: "dragon",
+    title: "Dragon Curve",
+    description:
+      "Fold paper in half k times, unfold every crease to a right angle, and the edge traces a plane-filling fractal that never crosses itself.",
+    route: "dragon/",
+    mountPreview: mountDragonPreview,
   },
 ];

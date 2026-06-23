@@ -2,6 +2,7 @@ import "../../styles/manifold/styles.css";
 import "../chessboard/chessboard.css";
 import "./ford-circles.css";
 import { el } from "../../shared/dom";
+import { pageFooter } from "../../shared/footer";
 import { icon } from "../../shared/icons";
 import { initTheme } from "../../shared/theme";
 import { themeToggle } from "../../shared/theme-toggle";
@@ -117,6 +118,7 @@ function mount(root: HTMLElement): void {
     el("div", { className: "cb-studio" }, [
       toolbar(),
       el("div", { className: "cb-body" }, [wrap, panelEl]),
+      pageFooter(),
     ]),
   );
 

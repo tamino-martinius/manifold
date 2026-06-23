@@ -17,6 +17,7 @@ export default defineConfig({
         "ford-circles": resolve(__dirname, "ford-circles/index.html"),
         "prime-spiral": resolve(__dirname, "prime-spiral/index.html"),
         collatz: resolve(__dirname, "collatz/index.html"),
+        recaman: resolve(__dirname, "recaman/index.html"),
       },
     },
   },

@@ -6,6 +6,7 @@ import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 import { mountPascalPreview } from "../illustrations/pascal/preview";
 import { mountPrimeSpiralPreview } from "../illustrations/prime-spiral/preview";
+import { mountRecamanPreview } from "../illustrations/recaman/preview";
 import { mountToothpickPreview } from "../illustrations/toothpicks/preview";
 import { mountUlamPreview } from "../illustrations/ulam/preview";
 
@@ -97,5 +98,13 @@ export const illustrations: Illustration[] = [
       "Thousands of 3n+1 trajectories grown from a shared root into an organic branching tree; two turn-angle knobs morph it from tight fern to sprawling coral.",
     route: "collatz/",
     mountPreview: mountCollatzPreview,
+  },
+  {
+    id: "recaman",
+    title: "Recamán's Sequence",
+    description:
+      "Alternating up/down semicircular arcs along a number line trace Recamán's sequence into a non-crossing web.",
+    route: "recaman/",
+    mountPreview: mountRecamanPreview,
   },
 ];

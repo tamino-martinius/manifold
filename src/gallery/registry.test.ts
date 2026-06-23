@@ -92,7 +92,16 @@ describe("registry", () => {
     expect(typeof collatz?.mountPreview).toBe("function");
   });
 
-  it("lists the collatz illustration last", () => {
-    expect(illustrations[illustrations.length - 1]?.id).toBe("collatz");
+  it("includes the recaman illustration with required fields", () => {
+    const r = illustrations.find((i) => i.id === "recaman");
+    expect(r).toBeDefined();
+    expect(r?.route).toBe("recaman/");
+    expect(r?.title.length).toBeGreaterThan(0);
+    expect(r?.description.length).toBeGreaterThan(0);
+    expect(typeof r?.mountPreview).toBe("function");
+  });
+
+  it("lists the recaman illustration last", () => {
+    expect(illustrations[illustrations.length - 1]?.id).toBe("recaman");
   });
 });

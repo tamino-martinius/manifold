@@ -1,4 +1,9 @@
+import "../../styles/manifold/styles.css";
 import "./chessboard.css";
+import logoMark from "../../assets/manifold/logo-mark.svg?raw";
+import { el } from "../../shared/dom";
+import { initTheme } from "../../shared/theme";
+import { themeToggle } from "../../shared/theme-toggle";
 import { createAnimator } from "./animation";
 import { type Camera, easeScale, fitCamera } from "./camera";
 import { mountPanel } from "./panel/panel";
@@ -8,19 +13,40 @@ import { createChessboardStore, recomputePlacements } from "./state";
 // Higher = snappier zoom easing (per-second exponential rate).
 const ZOOM_SMOOTH_RATE = 8;
 
-function mount(root: HTMLElement): void {
-  root.innerHTML = `
-    <div class="cb-layout">
-      <div class="cb-canvas-wrap">
-        <div class="cb-topbar"><a href="../">← all illustrations</a></div>
-        <canvas></canvas>
-      </div>
-      <aside class="cb-panel"></aside>
-    </div>`;
+function logo(): HTMLElement {
+  const span = el("span", { className: "cb-logo", "aria-hidden": "true" });
+  span.innerHTML = logoMark;
+  return span;
+}
 
-  const wrap = root.querySelector(".cb-canvas-wrap") as HTMLElement;
-  const canvas = root.querySelector("canvas") as HTMLCanvasElement;
-  const panelEl = root.querySelector(".cb-panel") as HTMLElement;
+function toolbar(): HTMLElement {
+  const brand = el("a", { className: "cb-brand", href: "../", title: "Back to atlas" }, [
+    logo(),
+    el("span", { className: "cb-wordmark" }, ["manifold"]),
+  ]);
+  return el("header", { className: "cb-toolbar" }, [
+    el("div", { className: "cb-toolbar-left" }, [
+      brand,
+      el("span", { className: "cb-crumb ds-label" }, ["/ chessboard patterns"]),
+    ]),
+    el("div", { className: "cb-toolbar-right" }, [
+      themeToggle("cb-icon-btn cb-icon-btn--secondary"),
+    ]),
+  ]);
+}
+
+function mount(root: HTMLElement): void {
+  initTheme();
+  const canvas = el("canvas") as HTMLCanvasElement;
+  const wrap = el("div", { className: "cb-canvas-wrap ds-dot-bg" }, [canvas]);
+  const panelEl = el("aside", { className: "cb-panel" });
+  root.append(
+    el("div", { className: "cb-studio" }, [
+      toolbar(),
+      el("div", { className: "cb-body" }, [wrap, panelEl]),
+    ]),
+  );
+
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
   const store = createChessboardStore();
 

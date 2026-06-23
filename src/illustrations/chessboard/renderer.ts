@@ -2,9 +2,11 @@ import { type Camera, worldToScreen } from "./camera";
 import { coordToIndex } from "./spiral";
 import type { Placement } from "./types";
 
-const LIGHT = "#ece7df";
-const DARK = "#c9bfae";
-const NUMBER_COLOR = "#6b6256";
+// Cool-grey board panel (Manifold ink ramp), kept light in both themes so the
+// black/red default pieces stay visible while integrating with the cool chrome.
+const LIGHT = "#d6dde0";
+const DARK = "#b7c1c6";
+const NUMBER_COLOR = "#5a666d";
 const MIN_CELL_PX_FOR_NUMBERS = 22;
 
 export function cellShade(x: number, y: number): string {

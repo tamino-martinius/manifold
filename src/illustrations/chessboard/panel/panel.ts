@@ -1,11 +1,14 @@
 import { clear, el } from "../../../shared/dom";
 import type { Store } from "../../../shared/store";
+import { icon } from "../../../shared/icons";
 import { clampOffsets } from "../pieces";
 import type { ChessboardState } from "../state";
 import type { GridSize, Piece, StrategyKind } from "../types";
+import { field, mButton, mIconButton, mNumber, mSegmented, mSlider } from "./controls";
 import { movementGrid, toggleOffset } from "./movement-grid";
 
-const PALETTE = ["#000000", "#e10600", "#1f6feb", "#2da44e", "#a371f7", "#fb8500"];
+const PALETTE = ["#3ddc84", "#ff5b47", "#22d3ee", "#ffb000", "#9d8cff", "#ff2e97"];
+const GRID_SIZES: GridSize[] = [3, 5, 7, 9];
 
 function updatePiece(
   store: Store<ChessboardState>,
@@ -16,6 +19,20 @@ function updatePiece(
   const pieces = store.get().pieces.map((p) => (p.id === id ? { ...p, ...patch } : p));
   store.set({ pieces });
   onChange();
+}
+
+function setPlayContent(btn: HTMLButtonElement, playing: boolean): void {
+  btn.replaceChildren(
+    icon(playing ? "pause" : "play", 14),
+    el("span", {}, [playing ? "Pause" : "Play"]),
+  );
+}
+
+function sectionLabel(text: string, trailing?: string): HTMLElement {
+  return el("div", { className: "cb-section" }, [
+    el("span", { className: "ds-label" }, [text]),
+    ...(trailing ? [el("span", { className: "ds-label cb-section-meta" }, [trailing])] : []),
+  ]);
 }
 
 export function mountPanel(
@@ -35,73 +52,70 @@ export function mountPanel(
       scrubEl.max = String(s.placements.length);
       scrubEl.value = String(Math.round(s.frame));
     }
-    if (playBtn) playBtn.textContent = s.playing ? "⏸ Pause" : "▶ Play";
+    if (playBtn) setPlayContent(playBtn, s.playing);
   };
 
-  function pieceCard(piece: Piece, strategyKind: StrategyKind): HTMLElement {
-    const card = el("div", { className: "cb-piece" });
-
-    const colorInput = el("input", {
+  function pieceCard(piece: Piece, index: number, strategyKind: StrategyKind): HTMLElement {
+    const swatch = el("input", {
       type: "color",
+      className: "cb-swatch",
       value: piece.color,
       onChange: (e: Event) =>
         updatePiece(store, piece.id, { color: (e.target as HTMLInputElement).value }, onChange),
     });
 
-    const sizeSelect = el(
-      "select",
-      {
-        onChange: (e: Event) => {
-          const gridSize = Number((e.target as HTMLSelectElement).value) as GridSize;
-          updatePiece(
-            store,
-            piece.id,
-            { gridSize, offsets: clampOffsets(piece.offsets, gridSize) },
-            onChange,
-          );
-        },
+    const remove = mIconButton("x", {
+      title: "Remove piece",
+      variant: "danger",
+      onClick: () => {
+        if (store.get().pieces.length <= 1) return;
+        store.set({ pieces: store.get().pieces.filter((p) => p.id !== piece.id) });
+        onChange();
       },
-      ([3, 5, 7, 9] as GridSize[]).map((n) => el("option", { value: String(n) }, [`${n}×${n}`])),
-    ) as HTMLSelectElement;
-    sizeSelect.value = String(piece.gridSize);
+    });
 
-    const removeBtn = el(
-      "button",
-      {
-        className: "cb-btn",
-        onClick: () => {
-          if (store.get().pieces.length <= 1) return;
-          store.set({ pieces: store.get().pieces.filter((p) => p.id !== piece.id) });
-          onChange();
-        },
+    const head = el("div", { className: "cb-piece-head" }, [
+      el("div", { className: "cb-piece-id" }, [
+        swatch,
+        el("span", { className: "ds-label" }, [`piece ${index + 1}`]),
+      ]),
+      remove,
+    ]);
+
+    const sizes = mSegmented(
+      GRID_SIZES.map((n) => ({ value: String(n), label: String(n) })),
+      String(piece.gridSize),
+      (v) => {
+        const gridSize = Number(v) as GridSize;
+        updatePiece(
+          store,
+          piece.id,
+          { gridSize, offsets: clampOffsets(piece.offsets, gridSize) },
+          onChange,
+        );
       },
-      ["✕"],
     );
 
-    card.append(el("div", { className: "cb-piece-head" }, [colorInput, sizeSelect, removeBtn]));
-    card.append(
-      movementGrid(piece.gridSize, piece.offsets, (dx, dy) =>
-        updatePiece(store, piece.id, { offsets: toggleOffset(piece.offsets, dx, dy) }, onChange),
-      ),
+    const grid = movementGrid(piece.gridSize, piece.offsets, (dx, dy) =>
+      updatePiece(store, piece.id, { offsets: toggleOffset(piece.offsets, dx, dy) }, onChange),
     );
+
+    const card = el("div", { className: "cb-piece" }, [
+      head,
+      field("Grid", sizes),
+      field("Moves", grid),
+    ]);
 
     if (strategyKind === "weighted") {
       card.append(
-        el("div", { className: "cb-row" }, [
-          el("label", {}, ["Weight"]),
-          el("input", {
-            type: "number",
-            min: "0",
-            value: String(piece.weight),
-            onChange: (e: Event) =>
-              updatePiece(
-                store,
-                piece.id,
-                { weight: Math.max(0, Number((e.target as HTMLInputElement).value)) },
-                onChange,
-              ),
+        field(
+          "Weight",
+          mNumber({
+            value: piece.weight,
+            min: 0,
+            onChange: (v) => updatePiece(store, piece.id, { weight: v }, onChange),
           }),
-        ]),
+        ),
       );
     }
     return card;
@@ -110,110 +124,84 @@ export function mountPanel(
   const renderAll = (): void => {
     const s = store.get();
     clear(host);
-    host.append(el("h1", {}, ["Chessboard Patterns"]));
 
-    const controls = el("div", { className: "cb-controls" });
-
-    playBtn = el(
-      "button",
-      { className: "cb-btn", onClick: () => store.set({ playing: !store.get().playing }) },
-      [s.playing ? "⏸ Pause" : "▶ Play"],
-    ) as HTMLButtonElement;
-
-    const stepBtn = el(
-      "button",
-      {
-        className: "cb-btn",
-        onClick: () => {
-          const st = store.get();
-          store.set({
-            playing: false,
-            frame: Math.min(Math.floor(st.frame) + 1, st.placements.length),
-          });
-        },
+    // Playback
+    playBtn = mButton("Play", {
+      icon: "play",
+      variant: "primary",
+      onClick: () => store.set({ playing: !store.get().playing }),
+    });
+    const stepBtn = mButton("Step", {
+      icon: "skip-forward",
+      onClick: () => {
+        const st = store.get();
+        store.set({
+          playing: false,
+          frame: Math.min(Math.floor(st.frame) + 1, st.placements.length),
+        });
       },
-      ["Step ›"],
-    );
-    controls.append(el("div", { className: "cb-row" }, [playBtn, stepBtn]));
+    });
 
-    scrubEl = el("input", {
-      type: "range",
-      className: "cb-slider",
-      min: "0",
-      max: String(s.placements.length),
-      value: String(Math.round(s.frame)),
-      onInput: (e: Event) =>
-        store.set({ playing: false, frame: Number((e.target as HTMLInputElement).value) }),
-    }) as HTMLInputElement;
-    controls.append(el("div", { className: "cb-row" }, [el("label", {}, ["Zoom"]), scrubEl]));
-
-    controls.append(
-      el("div", { className: "cb-row" }, [
-        el("label", {}, ["Speed"]),
-        el("input", {
-          type: "range",
-          className: "cb-slider",
-          min: "2",
-          max: "120",
-          value: String(s.speed),
-          onInput: (e: Event) => store.set({ speed: Number((e.target as HTMLInputElement).value) }),
-        }),
-      ]),
-    );
-
-    controls.append(
-      el("div", { className: "cb-row" }, [
-        el("label", {}, ["Max pieces"]),
-        el("input", {
-          type: "number",
-          min: "1",
-          max: "20000",
-          value: String(s.maxPieces),
-          onChange: (e: Event) => {
-            store.set({ maxPieces: Math.max(1, Number((e.target as HTMLInputElement).value)) });
-            onChange();
-          },
-        }),
-      ]),
-    );
-
-    const strategy = el(
-      "select",
-      {
-        onChange: (e: Event) => {
-          store.set({ strategy: (e.target as HTMLSelectElement).value as StrategyKind });
-          onChange();
-        },
+    scrubEl = mSlider({
+      min: 0,
+      max: s.placements.length,
+      value: Math.round(s.frame),
+      onInput: (v) => store.set({ playing: false, frame: v }),
+    });
+    const speed = mSlider({
+      min: 2,
+      max: 120,
+      value: s.speed,
+      onInput: (v) => store.set({ speed: v }),
+    });
+    const maxPieces = mNumber({
+      value: s.maxPieces,
+      min: 1,
+      max: 100000,
+      step: 500,
+      onChange: (v) => {
+        store.set({ maxPieces: v });
+        onChange();
       },
+    });
+    const order = mSegmented<StrategyKind>(
       [
-        el("option", { value: "round-robin" }, ["Round-robin"]),
-        el("option", { value: "weighted" }, ["Weighted"]),
+        { value: "round-robin", label: "Round-robin" },
+        { value: "weighted", label: "Weighted" },
       ],
-    ) as HTMLSelectElement;
-    strategy.value = s.strategy;
-    controls.append(el("div", { className: "cb-row" }, [el("label", {}, ["Order"]), strategy]));
-
-    host.append(controls);
-
-    for (const piece of s.pieces) host.append(pieceCard(piece, s.strategy));
+      s.strategy,
+      (v) => {
+        store.set({ strategy: v });
+        onChange();
+      },
+    );
 
     host.append(
-      el(
-        "button",
-        {
-          className: "cb-btn",
-          onClick: () => {
-            const used = new Set(store.get().pieces.map((p) => p.color));
-            const color = PALETTE.find((c) => !used.has(c)) ?? "#888888";
-            const id = `p${store.get().pieces.length + 1}-${Math.round(performance.now())}`;
-            store.set({
-              pieces: [...store.get().pieces, { id, color, gridSize: 5, offsets: [], weight: 1 }],
-            });
-            onChange();
-          },
+      sectionLabel("Parameters"),
+      el("div", { className: "cb-playback" }, [playBtn, stepBtn]),
+      field("Zoom", scrubEl),
+      field("Speed", speed),
+      field("Max pieces", maxPieces),
+      field("Order", order),
+      sectionLabel("Pieces", `${s.pieces.length}`),
+    );
+
+    s.pieces.forEach((piece, i) => host.append(pieceCard(piece, i, s.strategy)));
+
+    host.append(
+      mButton("Add piece", {
+        icon: "plus",
+        variant: "ghost",
+        onClick: () => {
+          const used = new Set(store.get().pieces.map((p) => p.color));
+          const color = PALETTE.find((c) => !used.has(c)) ?? "#888888";
+          const id = `p${store.get().pieces.length + 1}-${Math.round(performance.now())}`;
+          store.set({
+            pieces: [...store.get().pieces, { id, color, gridSize: 5, offsets: [], weight: 1 }],
+          });
+          onChange();
         },
-        ["+ Add piece"],
-      ),
+      }),
     );
 
     lastStructKey = structKey(s);

@@ -2,23 +2,9 @@ import "../styles/manifold/styles.css";
 import "./gallery.css";
 import { el } from "../shared/dom";
 import { icon } from "../shared/icons";
-import { currentTheme, initTheme, onThemeChange, toggleTheme } from "../shared/theme";
+import { initTheme } from "../shared/theme";
+import { themeToggle } from "../shared/theme-toggle";
 import { type Illustration, illustrations } from "./registry";
-
-function themeToggle(): HTMLElement {
-  const btn = el("button", {
-    className: "m-icon-btn",
-    title: "Toggle theme",
-    "aria-label": "Toggle theme",
-  });
-  const paint = () => {
-    btn.replaceChildren(icon(currentTheme() === "dark" ? "sun" : "moon", 16));
-  };
-  btn.addEventListener("click", () => toggleTheme());
-  onThemeChange(paint);
-  paint();
-  return btn;
-}
 
 function header(): HTMLElement {
   const brand = el("div", { className: "m-brand" }, [

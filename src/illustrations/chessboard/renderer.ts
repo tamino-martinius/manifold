@@ -6,13 +6,33 @@ import type { PlacedData } from "./types";
 // black/red default pieces stay visible while integrating with the cool chrome.
 const LIGHT = "#d6dde0";
 const DARK = "#b7c1c6";
+const LIGHT_RGB: readonly [number, number, number] = [0xd6, 0xdd, 0xe0];
+const DARK_RGB: readonly [number, number, number] = [0xb7, 0xc1, 0xc6];
+const MID_RGB: readonly [number, number, number] = [
+  Math.round((LIGHT_RGB[0] + DARK_RGB[0]) / 2),
+  Math.round((LIGHT_RGB[1] + DARK_RGB[1]) / 2),
+  Math.round((LIGHT_RGB[2] + DARK_RGB[2]) / 2),
+];
+const MID = rgbStr(MID_RGB);
 const NUMBER_COLOR = "#5a666d";
 const OUTLINE = "rgba(255, 255, 255, 0.5)";
 
 // Level-of-detail thresholds (on-screen cell size in px).
 const MIN_CELL_PX_FOR_NUMBERS = 22;
-const MIN_CELL_PX_FOR_CHECKER = 5; // below this the board pattern is hidden (dot-grid shows through)
+const CHECKER_FADE_FULL = 16; // >= this cell size: full light/dark contrast
+const CHECKER_FADE_ZERO = 6; //  <= this cell size: uniform mid tone (pattern gone)
 const MIN_CELL_PX_FOR_ARCS = 7; // below this pieces draw as squares (cheaper than arcs)
+
+function rgbStr(c: readonly [number, number, number]): string {
+  return `rgb(${c[0] | 0}, ${c[1] | 0}, ${c[2] | 0})`;
+}
+function mix(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+  t: number,
+): [number, number, number] {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
 
 export function cellShade(x: number, y: number): string {
   return (((x + y) % 2) + 2) % 2 === 0 ? LIGHT : DARK;
@@ -37,14 +57,23 @@ export function renderBoard(
   const cellPx = cam.scale;
   const half = cellPx / 2;
 
-  // Checkerboard — hidden when zoomed far out (the dot-grid behind the canvas
-  // shows through the cleared, transparent board).
-  if (cellPx >= MIN_CELL_PX_FOR_CHECKER) {
+  // Checkerboard whose contrast fades to a uniform mid tone as cells shrink, so
+  // the pattern (and the borders between cells) dissolves smoothly instead of a
+  // hard cutoff — no moiré at tiny cell sizes. Below the fade floor, one fill.
+  let t = (cellPx - CHECKER_FADE_ZERO) / (CHECKER_FADE_FULL - CHECKER_FADE_ZERO);
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  const contrast = t * t * (3 - 2 * t); // smoothstep
+  if (contrast <= 0.02) {
+    ctx.fillStyle = MID;
+    ctx.fillRect(0, 0, canvasW, canvasH);
+  } else {
+    const lightC = rgbStr(mix(MID_RGB, LIGHT_RGB, contrast));
+    const darkC = rgbStr(mix(MID_RGB, DARK_RGB, contrast));
     for (let y = worldYMin; y <= worldYMax; y++) {
       for (let x = worldXMin; x <= worldXMax; x++) {
         const sx = x * cam.scale + cam.offsetX;
         const sy = -y * cam.scale + cam.offsetY;
-        ctx.fillStyle = cellShade(x, y);
+        ctx.fillStyle = (((x + y) % 2) + 2) % 2 === 0 ? lightC : darkC;
         ctx.fillRect(sx - half, sy - half, cellPx, cellPx);
       }
     }

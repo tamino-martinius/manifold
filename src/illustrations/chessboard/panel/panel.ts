@@ -9,9 +9,10 @@ import type { GridSize, Piece, StrategyKind } from "../types";
 import { field, mButton, mIconButton, mNumber, mSegmented, mSlider } from "./controls";
 import { miniGrid, movementGrid, toggleOffset } from "./movement-grid";
 
-// Distinct, non-red hues (the default pieces already cover black + red), picked
-// by maximum distance from existing pieces so new pieces never echo a hue.
-const PALETTE = ["#3ddc84", "#22d3ee", "#ffb000", "#9d8cff", "#ff2e97", "#1f6feb"];
+// Distinct hues (the default pieces already cover black + red), kept darker and
+// muted so they hold contrast against the light-grey board; picked by maximum
+// distance from existing pieces so new pieces never echo a hue.
+const PALETTE = ["#1f7a4d", "#0e7490", "#b45309", "#6d28d9", "#be185d", "#1d4ed8"];
 const GRID_SIZES: GridSize[] = [3, 5, 7, 9];
 const MAX_PIECES_CAP = 1_000_000;
 

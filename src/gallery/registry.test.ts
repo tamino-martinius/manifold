@@ -10,4 +10,13 @@ describe("registry", () => {
     expect(chess?.description.length).toBeGreaterThan(0);
     expect(typeof chess?.mountPreview).toBe("function");
   });
+
+  it("includes the recaman illustration with required fields", () => {
+    const r = illustrations.find((i) => i.id === "recaman");
+    expect(r).toBeDefined();
+    expect(r?.route).toBe("recaman/");
+    expect(r?.title.length).toBeGreaterThan(0);
+    expect(r?.description.length).toBeGreaterThan(0);
+    expect(typeof r?.mountPreview).toBe("function");
+  });
 });

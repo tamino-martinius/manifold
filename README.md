@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/recaman/"><img src="docs/previews/recaman.png" alt="Recamán's Sequence" width="240"></a> | **[Recamán's Sequence](https://manifold.tamino.dev/recaman/)** | Alternating up/down semicircular arcs along a number line trace Recamán's sequence ([OEIS&nbsp;A005132](https://oeis.org/A005132)) into its iconic non-crossing web. Scrub the timeline to reveal arcs one at a time while a bounding-box camera keeps the growing line framed; play/pause/step and a speed control drive the reveal. Toggle **gradient-by-n** vs **single-accent** colouring and alternating vs all-above sides, and dial **terms** up to **100,000**. |
 
 ## Theme
 

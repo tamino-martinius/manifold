@@ -29,4 +29,34 @@ describe("createToothpickEngine (synchronous fallback)", () => {
     engine.dispose();
     vi.useRealTimers();
   });
+
+  it("clamps frame to the generation count (not the instance count) on recompute", () => {
+    vi.useFakeTimers();
+    const store = createToothpickStore();
+    const single = {
+      id: "s",
+      name: "Straight",
+      color: "#000",
+      weight: 1,
+      outDocks: STRAIGHT.outDocks,
+      visual: STRAIGHT.visual,
+    };
+    const engine = createToothpickEngine(store);
+
+    store.set({ shapes: [single], maxGen: 8 });
+    engine.recompute();
+    vi.advanceTimersByTime(200);
+    store.set({ frame: 8 }); // user scrubbed to the last stage
+
+    // Shrinking maxGen shrinks the generation count; frame must follow it down,
+    // even though the instance count (placed.count) is still far larger.
+    store.set({ maxGen: 3 });
+    engine.recompute();
+    vi.advanceTimersByTime(200);
+    expect(store.get().placed.genSegEnds.length).toBe(3);
+    expect(store.get().frame).toBeLessThanOrEqual(store.get().placed.genSegEnds.length);
+
+    engine.dispose();
+    vi.useRealTimers();
+  });
 });

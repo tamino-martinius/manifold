@@ -96,6 +96,9 @@ function applyPlaced(store: Store<ToothpickState>, placed: PlacedData): void {
     placed,
     loading: false,
     progress: 1,
-    frame: Math.min(store.get().frame, placed.count),
+    // `frame` is a generation count, so clamp it to the generation count — not the
+    // (much larger) instance count — or a recompute that shrinks the structure
+    // would leave `frame` out of [0, G] in the store.
+    frame: Math.min(store.get().frame, placed.genSegEnds.length),
   });
 }

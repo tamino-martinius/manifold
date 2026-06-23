@@ -1,12 +1,13 @@
 import "../../styles/manifold/styles.css";
 import "./chessboard.css";
 import { el } from "../../shared/dom";
+import { icon } from "../../shared/icons";
 import { initTheme } from "../../shared/theme";
 import { themeToggle } from "../../shared/theme-toggle";
 import { createAnimator } from "./animation";
 import { easeScale, fitFromExtent } from "./camera";
 import { createEngine } from "./engine";
-import { CHESSBOARD_LINKS } from "./links";
+import { CHESSBOARD_LINKS, type ResourceLink } from "./links";
 import { mountPanel } from "./panel/panel";
 import { renderBoard } from "./renderer";
 import { type ChessboardState, createChessboardStore } from "./state";
@@ -19,18 +20,83 @@ const ZOOM_SMOOTH_RATE = 8;
 const BASE_RATE = 6; // pieces/sec near the start
 const GROWTH_RATE = 1.1; // + this fraction of the placed count per second
 
+function linkItem(link: ResourceLink): HTMLElement {
+  return el(
+    "a",
+    {
+      className: `cb-link cb-link--${link.kind}`,
+      href: link.url,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      title: link.title,
+    },
+    [
+      icon(link.kind === "video" ? "youtube" : "hash", 16),
+      el("span", { className: "cb-link-text" }, [
+        el("span", { className: "cb-link-title" }, [link.title]),
+        el("span", { className: "ds-label cb-link-label" }, [link.label]),
+      ]),
+    ],
+  );
+}
+
+// A toolbar dropdown of related links (fixed-positioned so it escapes the
+// toolbar, closes on outside-click / scroll / link-click).
+function linkDropdown(label: string, links: ResourceLink[]): HTMLElement {
+  const menu = el("div", { className: "cb-dd-menu" });
+  for (const l of links) menu.append(linkItem(l));
+  const trigger = el("button", { type: "button", className: "cb-dd-trigger" }, [
+    el("span", {}, [label]),
+    icon("chevron-down", 13),
+  ]);
+  const wrap = el("div", { className: "cb-dd" }, [trigger, menu]);
+
+  const onDoc = (e: MouseEvent): void => {
+    if (!wrap.contains(e.target as Node) && !menu.contains(e.target as Node)) close();
+  };
+  const onScroll = (e: Event): void => {
+    if (!menu.contains(e.target as Node)) close();
+  };
+  function close(): void {
+    wrap.classList.remove("is-open");
+    document.removeEventListener("mousedown", onDoc);
+    window.removeEventListener("scroll", onScroll, true);
+    window.removeEventListener("resize", close);
+  }
+  function open(): void {
+    const rect = trigger.getBoundingClientRect();
+    menu.style.top = `${Math.round(rect.bottom + 6)}px`;
+    menu.style.right = `${Math.round(window.innerWidth - rect.right)}px`;
+    menu.style.maxHeight = `${Math.max(160, Math.floor(window.innerHeight - rect.bottom - 16))}px`;
+    wrap.classList.add("is-open");
+    document.addEventListener("mousedown", onDoc);
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", close);
+  }
+  trigger.addEventListener("click", () => (wrap.classList.contains("is-open") ? close() : open()));
+  menu.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).closest("a")) close();
+  });
+  return wrap;
+}
+
 function toolbar(): HTMLElement {
   const brand = el("a", { className: "cb-brand", href: "../", title: "Back to atlas" }, [
     el("span", { className: "cb-wordmark" }, ["manifold"]),
   ]);
+  const right = el("div", { className: "cb-toolbar-right" });
+  const videos = CHESSBOARD_LINKS.filter((l) => l.kind === "video");
+  const refs = CHESSBOARD_LINKS.filter((l) => l.kind === "oeis");
+  if (videos.length > 0) right.append(linkDropdown("Videos", videos));
+  if (refs.length > 0) right.append(linkDropdown("OEIS", refs));
+  right.append(themeToggle("cb-icon-btn cb-icon-btn--secondary"));
+
   return el("header", { className: "cb-toolbar" }, [
     el("div", { className: "cb-toolbar-left" }, [
       brand,
       el("span", { className: "cb-crumb ds-label" }, ["/ chessboard patterns"]),
     ]),
-    el("div", { className: "cb-toolbar-right" }, [
-      themeToggle("cb-icon-btn cb-icon-btn--secondary"),
-    ]),
+    right,
   ]);
 }
 
@@ -133,7 +199,7 @@ function mount(root: HTMLElement): void {
     );
   };
 
-  mountPanel(panelEl, store, () => engine.recompute(), CHESSBOARD_LINKS);
+  mountPanel(panelEl, store, () => engine.recompute());
 
   const animator = createAnimator({
     isPlaying: () => store.get().playing,

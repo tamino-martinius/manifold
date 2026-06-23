@@ -61,7 +61,27 @@ export const CROSS: ShapePreset = {
   ],
 };
 
-export const SHAPE_PRESETS: ShapePreset[] = [STRAIGHT, TEE, BEND, CROSS];
+// Opposite-handed right-angle bend (turns down instead of up).
+export const BEND_L: ShapePreset = {
+  name: "Bend L",
+  outDocks: [{ at: pt(1, 0, -1, 0), dir: S }],
+  visual: [
+    { a: O, b: pt(1, 0, 0, 0) },
+    { a: pt(1, 0, 0, 0), b: pt(1, 0, -1, 0) },
+  ],
+};
+
+// L with unequal arms: a length-1 forward arm then a length-2 perpendicular arm.
+export const LONG_L: ShapePreset = {
+  name: "Long-L",
+  outDocks: [{ at: pt(1, 0, 2, 0), dir: N }],
+  visual: [
+    { a: O, b: pt(1, 0, 0, 0) },
+    { a: pt(1, 0, 0, 0), b: pt(1, 0, 2, 0) },
+  ],
+};
+
+export const SHAPE_PRESETS: ShapePreset[] = [STRAIGHT, TEE, BEND, BEND_L, LONG_L, CROSS];
 
 // Distinct, muted hues that read on the dotted backdrop in both themes.
 export const PALETTE = ["#0e7490", "#b45309", "#1f7a4d", "#6d28d9", "#be185d", "#1d4ed8"];

@@ -35,7 +35,7 @@ export function createToothpickStore(): Store<ToothpickState> {
   return createStore<ToothpickState>({
     shapes: defaultShapes(),
     strategy: "round-robin",
-    maxGen: 64,
+    maxGen: 256,
     frame: 0,
     playing: true,
     speed: 30,

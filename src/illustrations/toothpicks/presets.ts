@@ -1,6 +1,13 @@
 import type { Dir, DockSpec, Pt, Segment, Shape } from "./types";
 
-export type ShapePreset = { name: string; outDocks: DockSpec[]; visual: Segment[] };
+// `hidden` presets stay in the code (and resolve via presetNameFor) but are not
+// offered in the picker dropdown — used to park shapes that don't read well yet.
+export type ShapePreset = {
+  name: string;
+  outDocks: DockSpec[];
+  visual: Segment[];
+  hidden?: boolean;
+};
 
 const E: Dir = 0;
 const NE: Dir = 1;
@@ -85,9 +92,51 @@ export const LONG_L: ShapePreset = {
   ],
 };
 
+// Y — trident: a forward stem to a junction, a perpendicular crossbar, then two
+// parallel forward prongs. Two forward out-docks at the prong tips.
+export const Y: ShapePreset = {
+  name: "Y",
+  outDocks: [
+    { at: pt(2, 0, 1, 0), dir: E },
+    { at: pt(2, 0, -1, 0), dir: E },
+  ],
+  visual: [
+    { a: O, b: pt(1, 0, 0, 0) },
+    { a: pt(1, 0, -1, 0), b: pt(1, 0, 1, 0) },
+    { a: pt(1, 0, 1, 0), b: pt(2, 0, 1, 0) },
+    { a: pt(1, 0, -1, 0), b: pt(2, 0, -1, 0) },
+  ],
+};
+
+// U — staple: a crossbar through the in-dock with two forward prongs (a ⊏).
+export const U: ShapePreset = {
+  name: "U",
+  outDocks: [
+    { at: pt(1, 0, 1, 0), dir: E },
+    { at: pt(1, 0, -1, 0), dir: E },
+  ],
+  visual: [
+    { a: pt(0, 0, -1, 0), b: pt(0, 0, 1, 0) },
+    { a: pt(0, 0, 1, 0), b: pt(1, 0, 1, 0) },
+    { a: pt(0, 0, -1, 0), b: pt(1, 0, -1, 0) },
+  ],
+};
+
+// Stairs — a single-arm zigzag step: forward, up, forward.
+export const STAIRS: ShapePreset = {
+  name: "Stairs",
+  outDocks: [{ at: pt(2, 0, 1, 0), dir: E }],
+  visual: [
+    { a: O, b: pt(1, 0, 0, 0) },
+    { a: pt(1, 0, 0, 0), b: pt(1, 0, 1, 0) },
+    { a: pt(1, 0, 1, 0), b: pt(2, 0, 1, 0) },
+  ],
+};
+
 // A straight bar along the NE–SW diagonal axis (the 45° analogue of Straight).
 export const DIAGONAL: ShapePreset = {
   name: "Diagonal",
+  hidden: true,
   outDocks: [
     { at: pt(0, 1, 0, 0), dir: NE },
     { at: pt(0, -1, 0, 0), dir: SW },
@@ -98,6 +147,7 @@ export const DIAGONAL: ShapePreset = {
 // An eighth-turn: growth arrives East, leaves NE.
 export const BEND_45: ShapePreset = {
   name: "45°-Bend",
+  hidden: true,
   outDocks: [{ at: pt(0, 2, 0, 0), dir: NE }],
   visual: [{ a: O, b: pt(0, 2, 0, 0) }],
 };
@@ -105,6 +155,7 @@ export const BEND_45: ShapePreset = {
 // V-toothpick (A161206, inspired-by): two diagonal arms forming a ∨, two tips.
 export const VEE: ShapePreset = {
   name: "V",
+  hidden: true,
   outDocks: [
     { at: pt(0, 1, 0, 0), dir: NE },
     { at: pt(0, 0, 0, 1), dir: NW },
@@ -119,6 +170,7 @@ export const VEE: ShapePreset = {
 // arms (the orthogonal/diagonal mix that gives the D its name).
 export const DEE: ShapePreset = {
   name: "D",
+  hidden: true,
   outDocks: [
     { at: pt(1, 0, 0, 0), dir: E },
     { at: pt(0, 1, 0, 0), dir: NE },
@@ -134,6 +186,7 @@ export const DEE: ShapePreset = {
 // E-toothpick (A161328, inspired-by): a diagonal X — four diagonal arms.
 export const EEE: ShapePreset = {
   name: "E",
+  hidden: true,
   outDocks: [
     { at: pt(0, 1, 0, 0), dir: NE },
     { at: pt(0, 0, 0, 1), dir: NW },
@@ -151,6 +204,7 @@ export const EEE: ShapePreset = {
 // A 3-arm upward fan (axis N + two diagonals).
 export const FORK: ShapePreset = {
   name: "Fork",
+  hidden: true,
   outDocks: [
     { at: pt(0, 0, 1, 0), dir: N },
     { at: pt(0, 1, 0, 0), dir: NE },
@@ -166,6 +220,7 @@ export const FORK: ShapePreset = {
 // A dense star: every direction except the incoming West (fast-capping).
 export const ASTERISK: ShapePreset = {
   name: "Asterisk",
+  hidden: true,
   outDocks: [
     { at: pt(1, 0, 0, 0), dir: E },
     { at: pt(0, 1, 0, 0), dir: NE },
@@ -193,6 +248,9 @@ export const SHAPE_PRESETS: ShapePreset[] = [
   BEND_L,
   LONG_L,
   CROSS,
+  Y,
+  U,
+  STAIRS,
   DIAGONAL,
   BEND_45,
   VEE,
@@ -201,6 +259,11 @@ export const SHAPE_PRESETS: ShapePreset[] = [
   FORK,
   ASTERISK,
 ];
+
+/** Presets offered in the picker dropdown (everything not flagged `hidden`). */
+export function visiblePresets(): ShapePreset[] {
+  return SHAPE_PRESETS.filter((p) => !p.hidden);
+}
 
 // Distinct, muted hues that read on the dotted backdrop in both themes.
 export const PALETTE = ["#0e7490", "#b45309", "#1f7a4d", "#6d28d9", "#be185d", "#1d4ed8"];

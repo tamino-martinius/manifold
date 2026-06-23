@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { SHAPE_PRESETS, STRAIGHT, defaultShapes, presetNameFor } from "./presets";
+import { SHAPE_PRESETS, STRAIGHT, defaultShapes, presetNameFor, visiblePresets } from "./presets";
 
 describe("presets", () => {
   it("Straight emits two perpendicular out-docks (N and S)", () => {
     expect(STRAIGHT.outDocks).toHaveLength(2);
     expect(STRAIGHT.outDocks.map((d) => d.dir).sort((a, b) => a - b)).toEqual([2, 6]);
   });
-  it("has thirteen uniquely-named presets", () => {
+  it("has sixteen uniquely-named presets (90° first, then the hidden 45° family)", () => {
     const names = SHAPE_PRESETS.map((p) => p.name);
     expect(names).toEqual([
       "Straight",
@@ -15,6 +15,9 @@ describe("presets", () => {
       "Bend L",
       "Long-L",
       "Cross",
+      "Y",
+      "U",
+      "Stairs",
       "Diagonal",
       "45°-Bend",
       "V",
@@ -23,7 +26,29 @@ describe("presets", () => {
       "Fork",
       "Asterisk",
     ]);
-    expect(new Set(names).size).toBe(13);
+    expect(new Set(names).size).toBe(16);
+  });
+  it("hides the 45° presets from the picker but keeps them in SHAPE_PRESETS", () => {
+    const visible = visiblePresets().map((p) => p.name);
+    expect(visible).toEqual(["Straight", "T", "Bend", "Bend L", "Long-L", "Cross", "Y", "U", "Stairs"]);
+    for (const n of ["Diagonal", "45°-Bend", "V", "D", "E", "Fork", "Asterisk"]) {
+      expect(visible).not.toContain(n); // hidden from the dropdown
+      expect(SHAPE_PRESETS.map((p) => p.name)).toContain(n); // but still in code
+    }
+  });
+  it("adds the 90° Y (trident), U (staple), and Stairs presets", () => {
+    const y = SHAPE_PRESETS.find((p) => p.name === "Y");
+    const u = SHAPE_PRESETS.find((p) => p.name === "U");
+    const stairs = SHAPE_PRESETS.find((p) => p.name === "Stairs");
+    // Y + U: two forward (East=0) out-docks at the prong tips; Stairs: one.
+    expect(y?.outDocks.map((d) => d.dir)).toEqual([0, 0]);
+    expect(u?.outDocks.map((d) => d.dir)).toEqual([0, 0]);
+    expect(stairs?.outDocks).toHaveLength(1);
+    expect(stairs?.outDocks[0].dir).toBe(0);
+    // All three are axis-only (q = s = 0) → genuine 90° shapes.
+    const axisOnly = (p?: { outDocks: { at: { q: number; s: number } }[] }) =>
+      p?.outDocks.every((d) => d.at.q === 0 && d.at.s === 0);
+    expect(axisOnly(y) && axisOnly(u) && axisOnly(stairs)).toBe(true);
   });
   it("presetNameFor matches a known preset and falls back to Custom", () => {
     expect(presetNameFor(STRAIGHT)).toBe("Straight");

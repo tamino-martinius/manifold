@@ -2,7 +2,7 @@ import { pickDistinctColor } from "../../../shared/color";
 import { clear, el } from "../../../shared/dom";
 import { icon } from "../../../shared/icons";
 import type { Store } from "../../../shared/store";
-import { PALETTE, SHAPE_PRESETS, STRAIGHT, type ShapePreset, presetNameFor } from "../presets";
+import { PALETTE, STRAIGHT, type ShapePreset, presetNameFor, visiblePresets } from "../presets";
 import type { ToothpickState } from "../state";
 import type { Shape, StrategyKind } from "../types";
 import { field, mButton, mIconButton, mNumber, mSegmented, mSlider } from "./controls";
@@ -81,7 +81,7 @@ function presetPicker(shape: Shape, onPick: (preset: ShapePreset) => void): HTML
     window.addEventListener("resize", close);
   }
 
-  for (const preset of SHAPE_PRESETS) {
+  for (const preset of visiblePresets()) {
     const item = el("button", { type: "button", className: "tp-preset-item" }, [
       dockDiagram(preset.outDocks, preset.visual, "var(--text)", 34),
       el("span", { className: "tp-preset-name" }, [preset.name]),

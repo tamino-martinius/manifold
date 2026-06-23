@@ -4,7 +4,7 @@ import { EMPTY_PLACED, createToothpickStore } from "./state";
 describe("createToothpickStore", () => {
   it("starts with the default config", () => {
     const s = createToothpickStore().get();
-    expect(s.maxGen).toBe(64);
+    expect(s.maxGen).toBe(256);
     expect(s.strategy).toBe("round-robin");
     expect(s.shapes).toHaveLength(2);
     expect(s.speed).toBe(30);

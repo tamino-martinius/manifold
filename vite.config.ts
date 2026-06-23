@@ -10,6 +10,7 @@ export default defineConfig({
         chessboard: resolve(__dirname, "chessboard/index.html"),
         hilbert: resolve(__dirname, "hilbert/index.html"),
         goldbach: resolve(__dirname, "goldbach/index.html"),
+        pascal: resolve(__dirname, "pascal/index.html"),
       },
     },
   },

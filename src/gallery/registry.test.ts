@@ -10,4 +10,13 @@ describe("registry", () => {
     expect(chess?.description.length).toBeGreaterThan(0);
     expect(typeof chess?.mountPreview).toBe("function");
   });
+
+  it("includes the ford-circles illustration with required fields", () => {
+    const f = illustrations.find((i) => i.id === "ford-circles");
+    expect(f).toBeDefined();
+    expect(f?.route).toBe("ford-circles/");
+    expect(f?.title.length).toBeGreaterThan(0);
+    expect(f?.description.length).toBeGreaterThan(0);
+    expect(typeof f?.mountPreview).toBe("function");
+  });
 });

@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/ford-circles/"><img src="docs/previews/ford-circles.png" alt="Ford Circles / Farey" width="240"></a> | **[Ford Circles / Farey](https://manifold.tamino.dev/ford-circles/)** | Every reduced fraction `p/q` becomes a circle resting on the number line at `x = p/q` with radius `1/(2q²)`; neighbours in a Farey sequence kiss (`\|a·d − b·c\| = 1`) but never overlap. An equal-scale camera keeps the circles perfectly **round**; wheel-zoom and drag-pan into the endlessly nested fractal of tangent circles. Reveal densifies as the order&nbsp;`n` (max denominator) climbs; colour by **denominator** or **Stern–Brocot depth**, fill or outline, with LOD fraction labels at high zoom. |
 
 ## Theme
 

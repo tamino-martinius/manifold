@@ -8,6 +8,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         chessboard: resolve(__dirname, "chessboard/index.html"),
+        "ford-circles": resolve(__dirname, "ford-circles/index.html"),
       },
     },
   },

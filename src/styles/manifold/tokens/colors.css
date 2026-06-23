@@ -1,0 +1,155 @@
+/* ============================================================
+   COLORS — Manifold
+   Raw primitives live on :root (theme-agnostic).
+   Semantic tokens flip per [data-theme]. Dark is the native
+   default; light is fully supported and equally polished.
+   ============================================================ */
+
+:root {
+  /* ---- Phosphor accent scale (brand = green-400) ---- */
+  --green-100: #d8ffe9;
+  --green-200: #9bf3c4;
+  --green-300: #5fe79e;
+  --green-400: #3ddc84; /* BRAND ACCENT */
+  --green-500: #22b86a;
+  --green-600: #149f57;
+  --green-700: #0c7a42;
+  --green-800: #0a5230;
+  --green-900: #07301c;
+
+  /* ---- Cool-neutral ink scale (faint blue-green undertone) ---- */
+  --ink-0: #f4f7f8;
+  --ink-50: #e7edf0;
+  --ink-100: #cdd6da;
+  --ink-200: #9fabb2;
+  --ink-300: #75828a;
+  --ink-400: #5a666d;
+  --ink-500: #3c474e;
+  --ink-600: #2a343a;
+  --ink-700: #1e272c;
+  --ink-750: #182024;
+  --ink-800: #131a1e;
+  --ink-850: #0e1316;
+  --ink-900: #0a0d0f;
+  --ink-950: #070a0b;
+
+  /* ---- Spectrum hues (semantic + data) ---- */
+  --hue-cyan: #22d3ee;
+  --hue-amber: #ffb000;
+  --hue-red: #ff5b47;
+  --hue-violet: #9d8cff;
+  --hue-pink: #ff2e97;
+
+  /* ---- Illustration palettes (match the rendered artwork) ---- */
+  --pal-phosphor: linear-gradient(90deg, #02100a, #0c7a42, #3ddc84, #d8ffe9); /* @kind color */
+  --pal-ice: linear-gradient(90deg, #03060e, #0c3a6b, #22d3ee, #e2faff); /* @kind color */
+  --pal-ember: linear-gradient(90deg, #080402, #6e1c09, #ff5b3b, #ffb000, #fff5de); /* @kind color */
+  --pal-spectral: linear-gradient(
+    90deg,
+    #ff004d,
+    #ff8a00,
+    #ffe600,
+    #3ddc84,
+    #22d3ee,
+    #6a5cff,
+    #ff2e97
+  ); /* @kind color */
+  --pal-mono: linear-gradient(90deg, #0a0d0f, #e7edf0); /* @kind color */
+}
+
+/* ===================== DARK (default) ===================== */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: var(--ink-900);
+  --bg-sunken: var(--ink-950);
+  --surface: var(--ink-850);
+  --surface-raised: var(--ink-800);
+  --surface-overlay: var(--ink-750);
+
+  --line: #1b2328;
+  --line-strong: #2a343a;
+
+  --text: var(--ink-50);
+  --text-muted: var(--ink-200);
+  --text-faint: var(--ink-300);
+  --text-inverse: var(--ink-950);
+
+  --accent: var(--green-400);
+  --accent-hover: var(--green-300);
+  --accent-press: var(--green-500);
+  --accent-fg: #052012;
+  --accent-soft: rgba(61, 220, 132, 0.12);
+  --accent-line: rgba(61, 220, 132, 0.34);
+  --focus-ring: rgba(61, 220, 132, 0.45);
+
+  --info: var(--hue-cyan);
+  --info-fg: #04222a;
+  --info-soft: rgba(34, 211, 238, 0.12);
+  --success: var(--green-400);
+  --success-fg: #052012;
+  --success-soft: rgba(61, 220, 132, 0.12);
+  --warning: var(--hue-amber);
+  --warning-fg: #2a1c00;
+  --warning-soft: rgba(255, 176, 0, 0.13);
+  --danger: var(--hue-red);
+  --danger-fg: #2a0a06;
+  --danger-soft: rgba(255, 91, 71, 0.13);
+
+  /* graph-paper grid line */
+  --grid-line: rgba(255, 255, 255, 0.04);
+  --grid-line-strong: rgba(255, 255, 255, 0.07);
+}
+
+/* ===================== LIGHT ===================== */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f2f5f4;
+  --bg-sunken: #e7ece9;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-overlay: #ffffff;
+
+  --line: #dde4e1;
+  --line-strong: #c6d0cb;
+
+  --text: #0b1012;
+  --text-muted: #47545b;
+  --text-faint: #6f7c83;
+  --text-inverse: #f4f7f8;
+
+  /* Light theme uses a desaturated FUCHSIA accent (dark keeps phosphor lime). */
+  --accent: #b8398b;
+  --accent-hover: #c94f9e;
+  --accent-press: #97286f;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(184, 57, 139, 0.1);
+  --accent-line: rgba(184, 57, 139, 0.3);
+  --focus-ring: rgba(184, 57, 139, 0.4);
+
+  --info: #0e7490;
+  --info-fg: #ffffff;
+  --info-soft: rgba(14, 116, 144, 0.1);
+  --success: var(--green-700);
+  --success-fg: #ffffff;
+  --success-soft: rgba(12, 122, 66, 0.1);
+  --warning: #a86a00;
+  --warning-fg: #ffffff;
+  --warning-soft: rgba(168, 106, 0, 0.12);
+  --danger: #c23b2b;
+  --danger-fg: #ffffff;
+  --danger-soft: rgba(194, 59, 43, 0.1);
+
+  --grid-line: rgba(11, 40, 26, 0.05);
+  --grid-line-strong: rgba(11, 40, 26, 0.09);
+
+  /* lighter elevation in light mode */
+  --shadow-xs: 0 1px 1px rgba(20, 35, 28, 0.06);
+  --shadow-sm: 0 1px 2px rgba(20, 35, 28, 0.06), 0 2px 6px rgba(20, 35, 28, 0.07);
+  --shadow-md: 0 6px 18px rgba(20, 35, 28, 0.1);
+  --shadow-lg: 0 16px 44px rgba(20, 35, 28, 0.14);
+  --glow-accent: 0 0 0 1px var(--accent-line), 0 0 16px rgba(184, 57, 139, 0.16);
+  --glow-accent-strong: 0 0 22px rgba(184, 57, 139, 0.24);
+}

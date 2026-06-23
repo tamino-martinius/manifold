@@ -13,7 +13,7 @@ export const illustrations: Illustration[] = [
     id: "chessboard",
     title: "Chessboard Patterns",
     description:
-      "Pieces fill a number-spiral board, each landing on the lowest cell no enemy attacks.",
+      "Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks.",
     route: "chessboard/",
     mountPreview: mountChessboardPreview,
   },

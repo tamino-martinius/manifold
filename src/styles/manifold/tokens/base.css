@@ -1,0 +1,144 @@
+/* ============================================================
+   BASE — Manifold
+   Minimal reset + branded element defaults. Body defaults to the
+   mono hero face. Includes a graph-paper background utility and
+   the signature uppercase mono label utility.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  font-feature-settings: "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+hr {
+  border: 0;
+  border-top: var(--border-thin) solid var(--line);
+  margin: var(--space-6) 0;
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}
+
+/* ---- Scrollbars (terminal feel) ---- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+
+/* ============================================================
+   BRANDED UTILITIES
+   ============================================================ */
+
+/* Signature uppercase mono micro-label */
+.ds-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Form field scaffolding (shared by all form components) */
+.ds-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ds-field__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: var(--weight-semibold);
+}
+.ds-field__msg {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-faint);
+}
+.ds-field__msg--error {
+  color: var(--danger);
+}
+
+/* Long-form prose opts into Space Grotesk */
+.ds-prose {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  color: var(--text-muted);
+  max-width: var(--maxw-prose);
+}
+
+/* Graph-paper background (use sparingly, behind canvases / heroes) */
+.ds-grid-bg {
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.ds-grid-bg--fine {
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+/* Dot-grid variant */
+.ds-dot-bg {
+  background-image: radial-gradient(var(--grid-line-strong) 1px, transparent 1px);
+  background-size: 20px 20px;
+}

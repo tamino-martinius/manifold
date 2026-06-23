@@ -3,7 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Math Illustrations</title>
+    <title>manifold — atlas of computed mathematics</title>
+    <meta
+      name="description"
+      content="manifold — an atlas of computed mathematics. Interactive illustrations explored beside a live canvas."
+    />
+    <script>
+      // No-flash theme: resolve before first paint (OS preference unless overridden).
+      (function () {
+        try {
+          var s = localStorage.getItem("manifold-theme");
+          var t =
+            s === "dark" || s === "light"
+              ? s
+              : window.matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark";
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <main id="gallery"></main>

@@ -1,0 +1,10 @@
+/* ============================================================
+   MANIFOLD — global stylesheet entry point.
+   Vendored from the Manifold Design System (claude.ai/design).
+   Keep it as @import lines only.
+   ============================================================ */
+@import url("./tokens/fonts.css");
+@import url("./tokens/colors.css");
+@import url("./tokens/typography.css");
+@import url("./tokens/spacing.css");
+@import url("./tokens/base.css");

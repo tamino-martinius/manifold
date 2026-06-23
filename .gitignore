@@ -2,3 +2,6 @@
 docs/superpowers/
 node_modules/
 dist/
+
+# Playwright MCP scratch
+.playwright-mcp/

@@ -1,11 +1,16 @@
-import { spiralCoords } from "./spiral";
+import { spiralCoordAt } from "./spiral";
 import { createPicker } from "./strategy";
 import type { Piece, PlacedData, Placement, StrategyKind } from "./types";
 
 const PROGRESS_INTERVAL = 4096;
 
-function cellKey(x: number, y: number): string {
-  return `${x},${y}`;
+// Encode a cell (x, y) as a single integer key. Comfortably covers ±8191, far
+// beyond the spiral radius of a 1M-cell fill (~510), and stays < 2^31 so the
+// Maps keep fast integer keys.
+const CELL_OFFSET = 8192;
+const CELL_STRIDE = 16384;
+function cellNum(x: number, y: number): number {
+  return (x + CELL_OFFSET) * CELL_STRIDE + (y + CELL_OFFSET);
 }
 
 export function computePlacements(
@@ -18,19 +23,19 @@ export function computePlacements(
 
   const picker = createPicker(strategy, pieces);
   const placements: Placement[] = [];
-  const occupied = new Map<string, string>(); // cellKey -> color
-  const attackers = new Map<string, Map<string, number>>(); // cellKey -> color -> count
+  const occupied = new Set<number>(); // cellNum
+  const attackers = new Map<number, number>(); // cellNum -> bitmask of attacking color bits
 
-  // Grow the spiral coordinate cache as needed.
-  let coords = spiralCoords(Math.max(maxPieces * 8, 64));
-
-  const attackedByOther = (key: string, color: string): boolean => {
-    const colors = attackers.get(key);
-    if (!colors) return false;
-    for (const [c, count] of colors) {
-      if (c !== color && count > 0) return true;
+  // Each distinct color gets a bit; "attacked by another color" is a single
+  // bitmask test, so a cell carries one number instead of a nested map.
+  const colorBit = new Map<string, number>();
+  const bitOf = (color: string): number => {
+    let b = colorBit.get(color);
+    if (b === undefined) {
+      b = colorBit.size;
+      colorBit.set(color, b);
     }
-    return false;
+    return b;
   };
 
   // Per-color scan pointer: the lowest spiral index that could still be valid
@@ -42,18 +47,16 @@ export function computePlacements(
 
   for (let frame = 0; frame < maxPieces; frame++) {
     const piece = picker.next();
+    const myBit = bitOf(piece.color);
+    const others = ~(1 << myBit);
 
     let scan = pointerByColor.get(piece.color) ?? 0;
     // Find the lowest empty cell not attacked by a different color.
-    // Loop is bounded: spiral grows on demand and always breaks on placement.
     while (true) {
-      if (scan >= coords.length) {
-        coords = spiralCoords(coords.length * 2);
-      }
-      const coord = coords[scan];
-      const key = cellKey(coord.x, coord.y);
-      if (!occupied.has(key) && !attackedByOther(key, piece.color)) {
-        occupied.set(key, piece.color);
+      const coord = spiralCoordAt(scan);
+      const key = cellNum(coord.x, coord.y);
+      if (!occupied.has(key) && ((attackers.get(key) ?? 0) & others) === 0) {
+        occupied.add(key);
         placements.push({
           frame,
           index: scan + 1,
@@ -61,11 +64,10 @@ export function computePlacements(
           pieceId: piece.id,
           color: piece.color,
         });
+        const bit = 1 << myBit;
         for (const [dx, dy] of piece.offsets) {
-          const tk = cellKey(coord.x + dx, coord.y + dy);
-          const colors = attackers.get(tk) ?? new Map<string, number>();
-          colors.set(piece.color, (colors.get(piece.color) ?? 0) + 1);
-          attackers.set(tk, colors);
+          const tk = cellNum(coord.x + dx, coord.y + dy);
+          attackers.set(tk, (attackers.get(tk) ?? 0) | bit);
         }
         pointerByColor.set(piece.color, scan);
         break;

@@ -7,11 +7,14 @@ const DIRS: Coord[] = [
   { x: 0, y: -1 }, // S
 ];
 
-// Persistent memoized spiral walk. `cache[i]` is the coord of spiral index i+1;
-// `reverse` maps "x,y" -> 1-based index. The walk state (below) lets us resume
-// extending the cache mid-run without recomputing from the start.
+// Persistent memoized spiral walk. `cache[i]` is the coord of spiral index i+1.
+// The walk state (below) lets us resume extending the cache mid-run without
+// recomputing from the start. The string-keyed `reverse` map (coord -> index)
+// is built lazily and only as far as `coordToIndex` needs — placement never
+// uses it, so a million-cell fill never pays for it.
 const cache: Coord[] = [{ x: 0, y: 0 }];
 const reverse = new Map<string, number>([["0,0", 1]]);
+let reverseBuiltTo = 1;
 let cx = 0;
 let cy = 0;
 let dir = 0;
@@ -35,8 +38,22 @@ function extendTo(count: number): void {
     cy += d.y;
     stepsLeftInRun--;
     cache.push({ x: cx, y: cy });
-    reverse.set(`${cx},${cy}`, cache.length);
   }
+}
+
+function ensureReverse(count: number): void {
+  extendTo(count);
+  for (let i = reverseBuiltTo; i < count; i++) {
+    reverse.set(`${cache[i].x},${cache[i].y}`, i + 1);
+  }
+  if (count > reverseBuiltTo) reverseBuiltTo = count;
+}
+
+/** The coord of 0-based cache position `i` (1-based spiral index `i+1`). Not a
+ *  copy — read-only; do not mutate the returned object. */
+export function spiralCoordAt(i: number): Coord {
+  extendTo(i + 1);
+  return cache[i];
 }
 
 export function spiralCoords(count: number): Coord[] {
@@ -55,7 +72,7 @@ export function indexToCoord(n: number): Coord {
 export function coordToIndex(x: number, y: number): number {
   const r = Math.max(Math.abs(x), Math.abs(y));
   const ringEnd = (2 * r + 1) ** 2; // last spiral index on Chebyshev ring r
-  extendTo(ringEnd);
+  ensureReverse(ringEnd);
   const idx = reverse.get(`${x},${y}`);
   if (idx === undefined) throw new Error(`coord (${x}, ${y}) not found`);
   return idx;

@@ -82,10 +82,12 @@ export function mNumber(opts: {
   value: number;
   min?: number;
   max?: number;
-  step?: number;
+  /** Increment per +/- click. A function receives the current value (adaptive steps). */
+  step?: number | ((value: number) => number);
   onChange: (value: number) => void;
 }): HTMLElement {
-  const step = opts.step ?? 1;
+  const stepFor = (v: number): number =>
+    typeof opts.step === "function" ? opts.step(v) : (opts.step ?? 1);
   const input = el("input", {
     type: "number",
     className: "cb-number-input",
@@ -108,8 +110,14 @@ export function mNumber(opts: {
   input.addEventListener("change", () => commit(Number(input.value)));
 
   return el("div", { className: "cb-number" }, [
-    mIconButton("minus", { title: "Decrease", onClick: () => commit(Number(input.value) - step) }),
+    mIconButton("minus", {
+      title: "Decrease",
+      onClick: () => commit(Number(input.value) - stepFor(Number(input.value))),
+    }),
     input,
-    mIconButton("plus", { title: "Increase", onClick: () => commit(Number(input.value) + step) }),
+    mIconButton("plus", {
+      title: "Increase",
+      onClick: () => commit(Number(input.value) + stepFor(Number(input.value))),
+    }),
   ]);
 }

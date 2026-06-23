@@ -9,6 +9,17 @@ import { movementGrid, toggleOffset } from "./movement-grid";
 
 const PALETTE = ["#3ddc84", "#ff5b47", "#22d3ee", "#ffb000", "#9d8cff", "#ff2e97"];
 const GRID_SIZES: GridSize[] = [3, 5, 7, 9];
+const MAX_PIECES_CAP = 1_000_000;
+
+// Adaptive +/- step for the max-pieces field: small near the bottom, coarser
+// as the count grows (500 → 1k → 2k → 5k → 10k).
+function maxPiecesStep(value: number): number {
+  if (value < 2000) return 500;
+  if (value < 5000) return 1000;
+  if (value < 20000) return 2000;
+  if (value < 50000) return 5000;
+  return 10000;
+}
 
 function updatePiece(
   store: Store<ChessboardState>,
@@ -157,8 +168,8 @@ export function mountPanel(
     const maxPieces = mNumber({
       value: s.maxPieces,
       min: 1,
-      max: 100000,
-      step: 500,
+      max: MAX_PIECES_CAP,
+      step: maxPiecesStep,
       onChange: (v) => {
         store.set({ maxPieces: v });
         onChange();

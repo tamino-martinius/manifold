@@ -29,7 +29,7 @@ export function createChessboardStore(): Store<ChessboardState> {
   return createStore<ChessboardState>({
     pieces: defaultPieces(),
     strategy: "round-robin",
-    maxPieces: 2000,
+    maxPieces: 100000,
     frame: 0,
     playing: true,
     speed: 30,

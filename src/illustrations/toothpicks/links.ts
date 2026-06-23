@@ -21,4 +21,22 @@ export const TOOTHPICK_LINKS: ResourceLink[] = [
     title: "A139251",
     label: "OEIS · per stage",
   },
+  {
+    kind: "oeis",
+    url: "https://oeis.org/A161206",
+    title: "A161206",
+    label: "OEIS · V-toothpick",
+  },
+  {
+    kind: "oeis",
+    url: "https://oeis.org/A161328",
+    title: "A161328",
+    label: "OEIS · E-toothpick",
+  },
+  {
+    kind: "oeis",
+    url: "https://oeis.org/A194700",
+    title: "A194700",
+    label: "OEIS · D-toothpick",
+  },
 ];

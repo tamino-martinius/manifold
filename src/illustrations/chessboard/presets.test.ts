@@ -3,9 +3,9 @@ import { gridRadius, offsetKey } from "./pieces";
 import { MOVEMENT_PRESETS, presetNameFor } from "./presets";
 
 describe("movement presets", () => {
-  it("are non-empty, 8-fold symmetric, and fit their grid", () => {
+  it("are 8-fold symmetric and fit their grid (Empty aside)", () => {
     for (const preset of MOVEMENT_PRESETS) {
-      expect(preset.offsets.length).toBeGreaterThan(0);
+      if (preset.name !== "Empty") expect(preset.offsets.length).toBeGreaterThan(0);
       const set = new Set(preset.offsets.map(([x, y]) => offsetKey(x, y)));
       const r = gridRadius(preset.gridSize);
       for (const [x, y] of preset.offsets) {

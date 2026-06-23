@@ -80,7 +80,7 @@ body {
 
 /* ---- Panel ---- */
 .cb-panel {
-  width: var(--sidebar-w);
+  width: 384px;
   flex-shrink: 0;
   overflow-y: auto;
   padding: var(--space-4);
@@ -92,11 +92,38 @@ body {
 }
 .cb-section {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+  min-height: 30px;
   margin-top: var(--space-2);
   padding-bottom: var(--space-2);
   border-bottom: var(--border-thin) solid var(--line);
+}
+
+/* Pieces as a two-column grid so they fit without scrolling. */
+.cb-pieces-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+/* Count stepper (- N +) in the Pieces header. */
+.cb-count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cb-count .cb-icon-btn {
+  width: 26px;
+  height: 26px;
+}
+.cb-count-value {
+  min-width: 1.5ch;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
 .cb-section:first-child {
   margin-top: 0;
@@ -336,12 +363,13 @@ body {
   border-radius: 1px;
 }
 
-/* ---- Piece card ---- */
+/* ---- Piece card (narrow, two per row) ---- */
 .cb-piece {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: var(--space-2);
+  padding: var(--space-2);
+  min-width: 0;
   background: var(--surface-raised);
   border: var(--border-thin) solid var(--line);
   border-radius: var(--radius-md);
@@ -349,21 +377,27 @@ body {
 .cb-piece-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-.cb-piece-id {
-  display: inline-flex;
-  align-items: center;
   gap: var(--space-2);
 }
-.cb-piece-id .ds-label {
+.cb-piece-id {
   color: var(--text-muted);
 }
+.cb-piece .cb-field-label {
+  font-size: var(--text-3xs);
+}
+.cb-piece .cb-segment {
+  padding: 4px 2px;
+}
+.cb-preset-trigger {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
 
-/* ---- Movement grid editor ---- */
+/* ---- Movement grid editor (kept compact within the narrow tile) ---- */
 .cb-grid {
   display: grid;
-  gap: 3px;
+  gap: 2px;
 }
 .cb-grid button {
   width: 100%;

@@ -29,9 +29,11 @@ function sym(base: [number, number][]): [number, number][] {
 }
 
 // A broad set of symmetric movement patterns (classic + fairy-chess leapers and
-// some geometric shapes). All are 8-fold symmetric by construction.
+// geometric shapes). All are 8-fold symmetric by construction; "Empty" clears.
 export const MOVEMENT_PRESETS: MovementPreset[] = [
-  { name: "Knight", gridSize: 5, offsets: sym([[1, 2]]) },
+  { name: "Empty", gridSize: 3, offsets: [] },
+  { name: "Wazir", gridSize: 3, offsets: sym([[1, 0]]) },
+  { name: "Ferz", gridSize: 3, offsets: sym([[1, 1]]) },
   {
     name: "King",
     gridSize: 3,
@@ -40,8 +42,7 @@ export const MOVEMENT_PRESETS: MovementPreset[] = [
       [1, 1],
     ]),
   },
-  { name: "Wazir", gridSize: 3, offsets: sym([[1, 0]]) },
-  { name: "Ferz", gridSize: 3, offsets: sym([[1, 1]]) },
+  { name: "Knight", gridSize: 5, offsets: sym([[1, 2]]) },
   { name: "Dabbaba", gridSize: 5, offsets: sym([[2, 0]]) },
   { name: "Alfil", gridSize: 5, offsets: sym([[2, 2]]) },
   {
@@ -70,6 +71,14 @@ export const MOVEMENT_PRESETS: MovementPreset[] = [
     ]),
   },
   {
+    name: "Octagon",
+    gridSize: 5,
+    offsets: sym([
+      [2, 0],
+      [2, 1],
+    ]),
+  },
+  {
     name: "Ring",
     gridSize: 5,
     offsets: sym([
@@ -89,7 +98,38 @@ export const MOVEMENT_PRESETS: MovementPreset[] = [
   },
   { name: "Camel", gridSize: 7, offsets: sym([[1, 3]]) },
   { name: "Zebra", gridSize: 7, offsets: sym([[2, 3]]) },
+  { name: "Threeleaper", gridSize: 7, offsets: sym([[3, 0]]) },
+  { name: "Tripper", gridSize: 7, offsets: sym([[3, 3]]) },
+  {
+    name: "Cross 7",
+    gridSize: 7,
+    offsets: sym([
+      [1, 0],
+      [2, 0],
+      [3, 0],
+    ]),
+  },
+  {
+    name: "Saltire 7",
+    gridSize: 7,
+    offsets: sym([
+      [1, 1],
+      [2, 2],
+      [3, 3],
+    ]),
+  },
+  {
+    name: "Ring 7",
+    gridSize: 7,
+    offsets: sym([
+      [3, 0],
+      [3, 1],
+      [3, 2],
+      [3, 3],
+    ]),
+  },
   { name: "Giraffe", gridSize: 9, offsets: sym([[1, 4]]) },
+  { name: "Antelope", gridSize: 9, offsets: sym([[3, 4]]) },
 ];
 
 /** Name of the preset matching these offsets+grid, or "Custom" if none. */

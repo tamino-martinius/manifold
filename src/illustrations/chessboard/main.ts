@@ -147,7 +147,11 @@ function mount(root: HTMLElement): void {
     onTick: (dt) => {
       const s = store.get();
       const max = s.placed.count;
-      if (s.frame >= max) return;
+      if (max <= 0) return; // still computing — nothing to advance yet
+      if (s.frame >= max) {
+        store.set({ playing: false }); // reached the end → stops, button shows "Replay"
+        return;
+      }
       const speedFactor = s.speed / 30;
       const next = s.frame + (BASE_RATE + s.frame * GROWTH_RATE) * speedFactor * Math.min(dt, 0.1);
       store.set({ frame: Math.min(next, max) });

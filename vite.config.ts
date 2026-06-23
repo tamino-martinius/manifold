@@ -13,6 +13,7 @@ export default defineConfig({
         pascal: resolve(__dirname, "pascal/index.html"),
         ulam: resolve(__dirname, "ulam/index.html"),
         dragon: resolve(__dirname, "dragon/index.html"),
+        toothpicks: resolve(__dirname, "toothpicks/index.html"),
       },
     },
   },

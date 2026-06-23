@@ -3,6 +3,7 @@ import { mountDragonPreview } from "../illustrations/dragon/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 import { mountPascalPreview } from "../illustrations/pascal/preview";
+import { mountToothpickPreview } from "../illustrations/toothpicks/preview";
 import { mountUlamPreview } from "../illustrations/ulam/preview";
 
 export type Illustration = {
@@ -61,5 +62,13 @@ export const illustrations: Illustration[] = [
       "Fold paper in half k times, unfold every crease to a right angle, and the edge traces a plane-filling fractal that never crosses itself.",
     route: "dragon/",
     mountPreview: mountDragonPreview,
+  },
+  {
+    id: "toothpicks",
+    title: "Toothpick Patterns",
+    description:
+      "Toothpicks sprout at every exposed endpoint, generation by generation, forming A139250's fractal sieve. Pick which shapes grow and in which order each round.",
+    route: "toothpicks/",
+    mountPreview: mountToothpickPreview,
   },
 ];

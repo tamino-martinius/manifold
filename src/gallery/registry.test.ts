@@ -56,7 +56,16 @@ describe("registry", () => {
     expect(typeof d?.mountPreview).toBe("function");
   });
 
-  it("lists the dragon illustration last", () => {
-    expect(illustrations[illustrations.length - 1]?.id).toBe("dragon");
+  it("includes the toothpicks illustration with required fields", () => {
+    const tp = illustrations.find((i) => i.id === "toothpicks");
+    expect(tp).toBeDefined();
+    expect(tp?.route).toBe("toothpicks/");
+    expect(tp?.title.length).toBeGreaterThan(0);
+    expect(tp?.description.length).toBeGreaterThan(0);
+    expect(typeof tp?.mountPreview).toBe("function");
+  });
+
+  it("lists the toothpicks illustration last", () => {
+    expect(illustrations[illustrations.length - 1]?.id).toBe("toothpicks");
   });
 });

@@ -1,4 +1,5 @@
 import { mountChessboardPreview } from "../illustrations/chessboard/preview";
+import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 
 export type Illustration = {
@@ -25,5 +26,13 @@ export const illustrations: Illustration[] = [
       "A single continuous, non-crossing path that fills a 2^k × 2^k grid while keeping 1-D-close indices 2-D-close — locality made visible by a gradient along the path.",
     route: "hilbert/",
     mountPreview: mountHilbertPreview,
+  },
+  {
+    id: "goldbach",
+    title: "Goldbach's Comet",
+    description:
+      "Each even number scattered against how many ways it splits into two primes; the dots resolve into a glowing comet whose lower edge never reaches zero.",
+    route: "goldbach/",
+    mountPreview: mountGoldbachPreview,
   },
 ];

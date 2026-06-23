@@ -1,0 +1,10 @@
+/* Goldbach's comet studio.
+   Reuses the chessboard chrome (toolbar / panel / controls / dropdowns /
+   loading overlay) via `import "../chessboard/chessboard.css"`; only the
+   comet-specific bits live here. */
+
+/* The scatter plane reads as a plot — a crosshair reinforces that, and the
+   page dot-grid shows through the transparent canvas for graph-paper feel. */
+.cb-canvas-wrap canvas {
+  cursor: crosshair;
+}

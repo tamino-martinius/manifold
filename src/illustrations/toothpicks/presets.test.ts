@@ -6,18 +6,20 @@ describe("presets", () => {
     expect(STRAIGHT.outDocks).toHaveLength(2);
     expect(STRAIGHT.outDocks.map((d) => d.dir).sort((a, b) => a - b)).toEqual([2, 6]);
   });
-  it("has sixteen uniquely-named presets (90° first, then the hidden 45° family)", () => {
+  it("has eighteen uniquely-named presets (90° first, then the hidden 45° family)", () => {
     const names = SHAPE_PRESETS.map((p) => p.name);
     expect(names).toEqual([
       "Straight",
       "T",
       "Bend",
-      "Bend L",
+      "Bend Mirrored",
       "Long-L",
+      "Long-L Mirrored",
       "Cross",
       "Y",
       "U",
       "Stairs",
+      "Stairs Mirrored",
       "Diagonal",
       "45°-Bend",
       "V",
@@ -26,11 +28,23 @@ describe("presets", () => {
       "Fork",
       "Asterisk",
     ]);
-    expect(new Set(names).size).toBe(16);
+    expect(new Set(names).size).toBe(18);
   });
   it("hides the 45° presets from the picker but keeps them in SHAPE_PRESETS", () => {
     const visible = visiblePresets().map((p) => p.name);
-    expect(visible).toEqual(["Straight", "T", "Bend", "Bend L", "Long-L", "Cross", "Y", "U", "Stairs"]);
+    expect(visible).toEqual([
+      "Straight",
+      "T",
+      "Bend",
+      "Bend Mirrored",
+      "Long-L",
+      "Long-L Mirrored",
+      "Cross",
+      "Y",
+      "U",
+      "Stairs",
+      "Stairs Mirrored",
+    ]);
     for (const n of ["Diagonal", "45°-Bend", "V", "D", "E", "Fork", "Asterisk"]) {
       expect(visible).not.toContain(n); // hidden from the dropdown
       expect(SHAPE_PRESETS.map((p) => p.name)).toContain(n); // but still in code
@@ -64,15 +78,25 @@ describe("presets", () => {
     expect(shapes[0].color).not.toBe(shapes[1].color);
     expect(new Set(shapes.map((s) => s.id)).size).toBe(2);
   });
-  it("includes the opposite bend and the long-L (90° family)", () => {
+  it("mirrors each chiral 90° preset (and leaves the symmetric ones single)", () => {
     const names = SHAPE_PRESETS.map((p) => p.name);
-    expect(names).toContain("Bend L");
-    expect(names).toContain("Long-L");
-    const bendL = SHAPE_PRESETS.find((p) => p.name === "Bend L");
+    // Chiral shapes get a "<X> Mirrored" counterpart.
+    for (const base of ["Bend", "Long-L", "Stairs"]) {
+      expect(names).toContain(base);
+      expect(names).toContain(`${base} Mirrored`);
+    }
+    // Mirror-symmetric shapes do not.
+    for (const sym of ["Straight", "T", "Cross", "Y", "U"]) {
+      expect(names).not.toContain(`${sym} Mirrored`);
+    }
+    // The mirror reflects the base across the growth (East) axis: an N dock becomes
+    // an S dock and the dock point's y-component (r) is negated.
     const bend = SHAPE_PRESETS.find((p) => p.name === "Bend");
-    // Same single-dock structure as Bend, but turning the other way (dir differs).
-    expect(bendL?.outDocks).toHaveLength(1);
-    expect(bendL?.outDocks[0].dir).not.toBe(bend?.outDocks[0].dir);
+    const bendM = SHAPE_PRESETS.find((p) => p.name === "Bend Mirrored");
+    expect(bend?.outDocks[0].dir).toBe(2); // N
+    expect(bendM?.outDocks).toHaveLength(1);
+    expect(bendM?.outDocks[0].dir).toBe(6); // S (reflected)
+    expect(bendM?.outDocks[0].at).toEqual({ p: 1, q: 0, r: -1, s: 0 });
   });
   it("includes the 45° family with diagonal docks", () => {
     const names = SHAPE_PRESETS.map((p) => p.name);

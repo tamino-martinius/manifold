@@ -46,4 +46,17 @@ describe("registry", () => {
     expect(ulam?.description.length).toBeGreaterThan(0);
     expect(typeof ulam?.mountPreview).toBe("function");
   });
+
+  it("includes the dragon illustration with required fields", () => {
+    const d = illustrations.find((i) => i.id === "dragon");
+    expect(d).toBeDefined();
+    expect(d?.route).toBe("dragon/");
+    expect(d?.title.length).toBeGreaterThan(0);
+    expect(d?.description.length).toBeGreaterThan(0);
+    expect(typeof d?.mountPreview).toBe("function");
+  });
+
+  it("lists the dragon illustration last", () => {
+    expect(illustrations[illustrations.length - 1]?.id).toBe("dragon");
+  });
 });

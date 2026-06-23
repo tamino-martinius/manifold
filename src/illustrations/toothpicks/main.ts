@@ -9,15 +9,14 @@ import { easeScale, fitFromExtent } from "./camera";
 import { createToothpickEngine } from "./engine";
 import { type ResourceLink, TOOTHPICK_LINKS } from "./links";
 import { mountPanel } from "./panel/panel";
-import { renderToothpicks } from "./renderer";
+import { renderToothpicks, revealSlices } from "./renderer";
 import { type ToothpickState, createToothpickStore } from "./state";
 import type { PlacedData } from "./types";
 
 // Higher = snappier zoom easing (per-second exponential rate).
 const ZOOM_SMOOTH_RATE = 8;
-// Relative (accelerating) reveal rate over individual toothpicks.
-const BASE_RATE = 6; // toothpicks/sec near the start
-const GROWTH_RATE = 1.1; // + this fraction of the revealed count per second
+// Generations revealed per second at speed 30; Play advances whole generations.
+const GEN_RATE = 3;
 
 function linkItem(link: ResourceLink): HTMLElement {
   return el(
@@ -142,9 +141,9 @@ function mount(root: HTMLElement): void {
   let viewHalfX = 0;
   let viewHalfY = 0;
   let scannedSeg = 0;
-  let lastCount = 0;
+  let lastShown = 0;
   let lastPlaced: PlacedData | null = null;
-  let drawFrame = -1;
+  let drawGen = -1;
   let drawScale = -1;
   let drawW = -1;
   let drawH = -1;
@@ -155,13 +154,14 @@ function mount(root: HTMLElement): void {
     const placed = s.placed;
     if (placed !== lastPlaced) {
       lastPlaced = placed;
-      viewHalfX = viewHalfY = scannedSeg = lastCount = 0;
+      viewHalfX = viewHalfY = scannedSeg = lastShown = 0;
     }
-    const count = Math.min(Math.floor(s.frame), placed.count);
-    if (count < lastCount) {
+    const slices = revealSlices(placed.genSegEnds, s.frame);
+    const shown = slices.outlineEnd;
+    if (shown < lastShown) {
       viewHalfX = viewHalfY = scannedSeg = 0;
     }
-    while (scannedSeg < placed.segCount && placed.instanceIndex[scannedSeg] < count) {
+    while (scannedSeg < shown) {
       const i = scannedSeg;
       const ax = Math.max(Math.abs(placed.x1[i]), Math.abs(placed.x2[i]));
       const ay = Math.max(Math.abs(placed.y1[i]), Math.abs(placed.y2[i]));
@@ -169,7 +169,7 @@ function mount(root: HTMLElement): void {
       if (ay > viewHalfY) viewHalfY = ay;
       scannedSeg++;
     }
-    lastCount = count;
+    lastShown = shown;
 
     const target = fitFromExtent(viewHalfX, viewHalfY, canvas.width, canvas.height, 3);
     const now = performance.now();
@@ -177,14 +177,15 @@ function mount(root: HTMLElement): void {
     lastT = now;
     displayScale = easeScale(displayScale, target.scale, dt, ZOOM_SMOOTH_RATE);
 
+    const gen = Math.floor(s.frame);
     const dirty =
-      count !== drawFrame ||
+      gen !== drawGen ||
       Math.abs(displayScale - drawScale) > 1e-3 ||
       canvas.width !== drawW ||
       canvas.height !== drawH ||
       placed !== drawPlaced;
     if (!dirty) return;
-    drawFrame = count;
+    drawGen = gen;
     drawScale = displayScale;
     drawW = canvas.width;
     drawH = canvas.height;
@@ -206,15 +207,14 @@ function mount(root: HTMLElement): void {
     isPlaying: () => store.get().playing,
     onTick: (dt) => {
       const s = store.get();
-      const max = s.placed.count;
-      if (max <= 0) return;
-      if (s.frame >= max) {
-        store.set({ playing: false });
+      const G = s.placed.genSegEnds.length;
+      if (G <= 0) return; // still computing
+      if (s.frame >= G) {
+        store.set({ playing: false }); // reached the last generation → stops
         return;
       }
-      const speedFactor = s.speed / 30;
-      const next = s.frame + (BASE_RATE + s.frame * GROWTH_RATE) * speedFactor * Math.min(dt, 0.1);
-      store.set({ frame: Math.min(next, max) });
+      const next = s.frame + (s.speed / 30) * GEN_RATE * Math.min(dt, 0.1);
+      store.set({ frame: Math.min(next, G) });
     },
     render,
   });

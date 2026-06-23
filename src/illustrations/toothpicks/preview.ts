@@ -1,7 +1,7 @@
 import { easeScale, fitFromExtent } from "./camera";
 import { computeToothpicks, packToothpicks } from "./growth";
 import { defaultShapes } from "./presets";
-import { renderToothpicks } from "./renderer";
+import { renderToothpicks, revealSlices } from "./renderer";
 
 export function mountToothpickPreview(canvas: HTMLCanvasElement): () => void {
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -11,7 +11,8 @@ export function mountToothpickPreview(canvas: HTMLCanvasElement): () => void {
   canvas.height = Math.round(cssSize * dpr);
 
   const placed = packToothpicks(computeToothpicks(defaultShapes(), "round-robin", 14));
-  const midFrame = Math.max(1, Math.floor(placed.count * 0.6));
+  const G = placed.genSegEnds.length;
+  const midFrame = Math.max(1, Math.floor(G * 0.6));
   let frame = midFrame;
   let displayScale = 0;
   let rafId = 0;
@@ -19,11 +20,10 @@ export function mountToothpickPreview(canvas: HTMLCanvasElement): () => void {
   let hovering = false;
 
   const draw = (shownFrame: number, snap: boolean, dt: number): void => {
-    const shown = Math.min(Math.ceil(shownFrame), placed.count);
+    const { outlineEnd } = revealSlices(placed.genSegEnds, shownFrame);
     let hx = 0;
     let hy = 0;
-    for (let i = 0; i < placed.segCount; i++) {
-      if (placed.instanceIndex[i] >= shown) break;
+    for (let i = 0; i < outlineEnd; i++) {
       hx = Math.max(hx, Math.abs(placed.x1[i]), Math.abs(placed.x2[i]));
       hy = Math.max(hy, Math.abs(placed.y1[i]), Math.abs(placed.y2[i]));
     }
@@ -33,7 +33,7 @@ export function mountToothpickPreview(canvas: HTMLCanvasElement): () => void {
       ctx,
       { scale: displayScale, offsetX: target.offsetX, offsetY: target.offsetY },
       placed,
-      shown,
+      shownFrame,
       canvas.width,
       canvas.height,
     );
@@ -49,8 +49,8 @@ export function mountToothpickPreview(canvas: HTMLCanvasElement): () => void {
     if (!hovering) return;
     const dt = last === 0 ? 0 : (now - last) / 1000;
     last = now;
-    frame += 26 * dt;
-    if (frame > placed.count + 12) {
+    frame += 4 * dt;
+    if (frame > G + 1) {
       frame = 0;
       displayScale = 0;
       last = 0;

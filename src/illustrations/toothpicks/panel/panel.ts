@@ -110,11 +110,11 @@ export function mountPanel(
 
   const syncLive = (s: ToothpickState): void => {
     if (scrubEl && document.activeElement !== scrubEl) {
-      scrubEl.max = String(s.placed.count);
+      scrubEl.max = String(s.placed.genSegEnds.length);
       scrubEl.value = String(Math.round(s.frame));
     }
     if (playBtn) {
-      const atEnd = s.placed.count > 0 && s.frame >= s.placed.count;
+      const atEnd = s.placed.genSegEnds.length > 0 && s.frame >= s.placed.genSegEnds.length;
       setPlayContent(playBtn, s.playing, atEnd);
     }
   };
@@ -173,7 +173,8 @@ export function mountPanel(
       variant: "primary",
       onClick: () => {
         const st = store.get();
-        const atEnd = st.placed.count > 0 && st.frame >= st.placed.count;
+        const G = st.placed.genSegEnds.length;
+        const atEnd = G > 0 && st.frame >= G;
         if (atEnd && !st.playing) store.set({ frame: 0, playing: true });
         else store.set({ playing: !st.playing });
       },
@@ -182,21 +183,14 @@ export function mountPanel(
       icon: "skip-forward",
       onClick: () => {
         const st = store.get();
-        const cur = Math.floor(st.frame);
-        let target = st.placed.count;
-        for (const e of st.placed.genEnds) {
-          if (e > cur) {
-            target = e;
-            break;
-          }
-        }
-        store.set({ playing: false, frame: target });
+        const G = st.placed.genSegEnds.length;
+        store.set({ playing: false, frame: Math.min(Math.floor(st.frame) + 1, G) });
       },
     });
 
     scrubEl = mSlider({
       min: 0,
-      max: s.placed.count,
+      max: s.placed.genSegEnds.length,
       value: Math.round(s.frame),
       onInput: (v) => store.set({ playing: false, frame: v }),
     });
@@ -271,7 +265,7 @@ export function mountPanel(
     host.append(
       sectionLabel("Parameters"),
       el("div", { className: "tp-playback" }, [playBtn, stepBtn]),
-      field("Zoom", scrubEl),
+      field("Stage", scrubEl),
       field("Speed", speed),
       field("Max generations", maxGen),
       field("Order", order),

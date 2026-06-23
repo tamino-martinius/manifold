@@ -37,4 +37,13 @@ describe("registry", () => {
     expect(p?.description.length).toBeGreaterThan(0);
     expect(typeof p?.mountPreview).toBe("function");
   });
+
+  it("includes the ulam illustration with required fields", () => {
+    const ulam = illustrations.find((i) => i.id === "ulam");
+    expect(ulam).toBeDefined();
+    expect(ulam?.route).toBe("ulam/");
+    expect(ulam?.title.length).toBeGreaterThan(0);
+    expect(ulam?.description.length).toBeGreaterThan(0);
+    expect(typeof ulam?.mountPreview).toBe("function");
+  });
 });

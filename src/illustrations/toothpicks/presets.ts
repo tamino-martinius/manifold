@@ -3,9 +3,13 @@ import type { Dir, DockSpec, Pt, Segment, Shape } from "./types";
 export type ShapePreset = { name: string; outDocks: DockSpec[]; visual: Segment[] };
 
 const E: Dir = 0;
+const NE: Dir = 1;
 const N: Dir = 2;
+const NW: Dir = 3;
 const W: Dir = 4;
+const SW: Dir = 5;
 const S: Dir = 6;
+const SE: Dir = 7;
 
 // Point in the exact (p,q,r,s) basis (p·E + q·NE + r·N + s·NW).
 function pt(p: number, q: number, r: number, s: number): Pt {
@@ -81,7 +85,121 @@ export const LONG_L: ShapePreset = {
   ],
 };
 
-export const SHAPE_PRESETS: ShapePreset[] = [STRAIGHT, TEE, BEND, BEND_L, LONG_L, CROSS];
+// A straight bar along the NE–SW diagonal axis (the 45° analogue of Straight).
+export const DIAGONAL: ShapePreset = {
+  name: "Diagonal",
+  outDocks: [
+    { at: pt(0, 1, 0, 0), dir: NE },
+    { at: pt(0, -1, 0, 0), dir: SW },
+  ],
+  visual: [{ a: pt(0, -1, 0, 0), b: pt(0, 1, 0, 0) }],
+};
+
+// An eighth-turn: growth arrives East, leaves NE.
+export const BEND_45: ShapePreset = {
+  name: "45°-Bend",
+  outDocks: [{ at: pt(0, 2, 0, 0), dir: NE }],
+  visual: [{ a: O, b: pt(0, 2, 0, 0) }],
+};
+
+// V-toothpick (A161206, inspired-by): two diagonal arms forming a ∨, two tips.
+export const VEE: ShapePreset = {
+  name: "V",
+  outDocks: [
+    { at: pt(0, 1, 0, 0), dir: NE },
+    { at: pt(0, 0, 0, 1), dir: NW },
+  ],
+  visual: [
+    { a: O, b: pt(0, 1, 0, 0) },
+    { a: O, b: pt(0, 0, 0, 1) },
+  ],
+};
+
+// D-toothpick (A194700, inspired-by): one orthogonal arm + two diagonal arms.
+export const DEE: ShapePreset = {
+  name: "D",
+  outDocks: [
+    { at: pt(0, 0, 1, 0), dir: N },
+    { at: pt(0, 1, 0, 0), dir: NE },
+    { at: pt(0, 0, 0, 1), dir: NW },
+  ],
+  visual: [
+    { a: O, b: pt(0, 0, 1, 0) },
+    { a: O, b: pt(0, 1, 0, 0) },
+    { a: O, b: pt(0, 0, 0, 1) },
+  ],
+};
+
+// E-toothpick (A161328, inspired-by): a diagonal X — four diagonal arms.
+export const EEE: ShapePreset = {
+  name: "E",
+  outDocks: [
+    { at: pt(0, 1, 0, 0), dir: NE },
+    { at: pt(0, 0, 0, 1), dir: NW },
+    { at: pt(0, -1, 0, 0), dir: SW },
+    { at: pt(0, 0, 0, -1), dir: SE },
+  ],
+  visual: [
+    { a: O, b: pt(0, 1, 0, 0) },
+    { a: O, b: pt(0, 0, 0, 1) },
+    { a: O, b: pt(0, -1, 0, 0) },
+    { a: O, b: pt(0, 0, 0, -1) },
+  ],
+};
+
+// A 3-arm upward fan (axis N + two diagonals).
+export const FORK: ShapePreset = {
+  name: "Fork",
+  outDocks: [
+    { at: pt(0, 0, 1, 0), dir: N },
+    { at: pt(0, 1, 0, 0), dir: NE },
+    { at: pt(0, 0, 0, 1), dir: NW },
+  ],
+  visual: [
+    { a: O, b: pt(0, 0, 1, 0) },
+    { a: O, b: pt(0, 1, 0, 0) },
+    { a: O, b: pt(0, 0, 0, 1) },
+  ],
+};
+
+// A dense star: every direction except the incoming West (fast-capping).
+export const ASTERISK: ShapePreset = {
+  name: "Asterisk",
+  outDocks: [
+    { at: pt(1, 0, 0, 0), dir: E },
+    { at: pt(0, 1, 0, 0), dir: NE },
+    { at: pt(0, 0, 1, 0), dir: N },
+    { at: pt(0, 0, 0, 1), dir: NW },
+    { at: pt(0, -1, 0, 0), dir: SW },
+    { at: pt(0, 0, -1, 0), dir: S },
+    { at: pt(0, 0, 0, -1), dir: SE },
+  ],
+  visual: [
+    { a: O, b: pt(1, 0, 0, 0) },
+    { a: O, b: pt(0, 1, 0, 0) },
+    { a: O, b: pt(0, 0, 1, 0) },
+    { a: O, b: pt(0, 0, 0, 1) },
+    { a: O, b: pt(0, -1, 0, 0) },
+    { a: O, b: pt(0, 0, -1, 0) },
+    { a: O, b: pt(0, 0, 0, -1) },
+  ],
+};
+
+export const SHAPE_PRESETS: ShapePreset[] = [
+  STRAIGHT,
+  TEE,
+  BEND,
+  BEND_L,
+  LONG_L,
+  CROSS,
+  DIAGONAL,
+  BEND_45,
+  VEE,
+  DEE,
+  EEE,
+  FORK,
+  ASTERISK,
+];
 
 // Distinct, muted hues that read on the dotted backdrop in both themes.
 export const PALETTE = ["#0e7490", "#b45309", "#1f7a4d", "#6d28d9", "#be185d", "#1d4ed8"];

@@ -6,10 +6,24 @@ describe("presets", () => {
     expect(STRAIGHT.outDocks).toHaveLength(2);
     expect(STRAIGHT.outDocks.map((d) => d.dir).sort((a, b) => a - b)).toEqual([2, 6]);
   });
-  it("has six uniquely-named presets", () => {
+  it("has thirteen uniquely-named presets", () => {
     const names = SHAPE_PRESETS.map((p) => p.name);
-    expect(names).toEqual(["Straight", "T", "Bend", "Bend L", "Long-L", "Cross"]);
-    expect(new Set(names).size).toBe(6);
+    expect(names).toEqual([
+      "Straight",
+      "T",
+      "Bend",
+      "Bend L",
+      "Long-L",
+      "Cross",
+      "Diagonal",
+      "45°-Bend",
+      "V",
+      "D",
+      "E",
+      "Fork",
+      "Asterisk",
+    ]);
+    expect(new Set(names).size).toBe(13);
   });
   it("presetNameFor matches a known preset and falls back to Custom", () => {
     expect(presetNameFor(STRAIGHT)).toBe("Straight");
@@ -34,5 +48,17 @@ describe("presets", () => {
     // Same single-dock structure as Bend, but turning the other way (dir differs).
     expect(bendL?.outDocks).toHaveLength(1);
     expect(bendL?.outDocks[0].dir).not.toBe(bend?.outDocks[0].dir);
+  });
+  it("includes the 45° family with diagonal docks", () => {
+    const names = SHAPE_PRESETS.map((p) => p.name);
+    for (const n of ["Diagonal", "45°-Bend", "V", "D", "E", "Fork", "Asterisk"]) {
+      expect(names).toContain(n);
+    }
+    // Diagonal docks use the diagonal directions (NE=1, NW=3, SW=5, SE=7).
+    const diagonal = SHAPE_PRESETS.find((p) => p.name === "Diagonal");
+    expect(diagonal?.outDocks.map((d) => d.dir).sort((a, b) => a - b)).toEqual([1, 5]);
+    const vee = SHAPE_PRESETS.find((p) => p.name === "V");
+    expect(vee?.outDocks).toHaveLength(2);
+    expect(vee?.outDocks.every((d) => d.dir % 2 === 1)).toBe(true); // both diagonal
   });
 });

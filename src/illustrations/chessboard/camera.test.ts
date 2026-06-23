@@ -31,4 +31,24 @@ describe("camera", () => {
     expect(Number.isFinite(cam.scale)).toBe(true);
     expect(cam.scale).toBeGreaterThan(0);
   });
+
+  it("keeps the origin (cell 1) at the canvas center for off-center coords", () => {
+    // All coords are to the right of the origin; the origin must still be centered.
+    const cam = fitCamera(
+      [
+        { x: 2, y: 0 },
+        { x: 4, y: 0 },
+      ],
+      200,
+      200,
+      0,
+    );
+    const origin = worldToScreen(cam, 0, 0);
+    expect(origin.sx).toBeCloseTo(100, 5);
+    expect(origin.sy).toBeCloseTo(100, 5);
+    // The farthest cell stays within the canvas (fit from the origin, not the bbox).
+    const far = worldToScreen(cam, 4, 0);
+    expect(far.sx).toBeLessThanOrEqual(200);
+    expect(far.sx).toBeGreaterThanOrEqual(0);
+  });
 });

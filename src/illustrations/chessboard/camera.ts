@@ -8,38 +8,25 @@ export function fitCamera(
   canvasH: number,
   paddingCells: number,
 ): Camera {
-  let minX = 0;
-  let maxX = 0;
-  let minY = 0;
-  let maxY = 0;
-  if (coords.length > 0) {
-    minX = Number.POSITIVE_INFINITY;
-    maxX = Number.NEGATIVE_INFINITY;
-    minY = Number.POSITIVE_INFINITY;
-    maxY = Number.NEGATIVE_INFINITY;
-    for (const c of coords) {
-      if (c.x < minX) minX = c.x;
-      if (c.x > maxX) maxX = c.x;
-      if (c.y < minY) minY = c.y;
-      if (c.y > maxY) maxY = c.y;
-    }
+  // Keep the origin (0,0) — the cell numbered 1 — fixed at the canvas center.
+  // Fit the largest extent reached from the origin in each axis, so all placed
+  // cells stay visible while cell 1 never drifts. Each cell spans 1 world unit
+  // centered on its coord, so its outer edge is |coord| + 0.5; add padding cells.
+  let halfX = 0;
+  let halfY = 0;
+  for (const c of coords) {
+    const ax = Math.abs(c.x);
+    const ay = Math.abs(c.y);
+    if (ax > halfX) halfX = ax;
+    if (ay > halfY) halfY = ay;
   }
-  // Each cell occupies 1 world unit centered on its integer coord, so the drawn
-  // extent runs from min-0.5 to max+0.5, plus padding cells on each side.
-  const padPlusHalf = paddingCells + 0.5;
-  const worldMinX = minX - padPlusHalf;
-  const worldMaxX = maxX + padPlusHalf;
-  const worldMinY = minY - padPlusHalf;
-  const worldMaxY = maxY + padPlusHalf;
-  const worldW = worldMaxX - worldMinX;
-  const worldH = worldMaxY - worldMinY;
-  const scale = Math.min(canvasW / worldW, canvasH / worldH);
-  const centerX = (worldMinX + worldMaxX) / 2;
-  const centerY = (worldMinY + worldMaxY) / 2;
-  // screen center = canvas center; screen y flipped (world +y is up).
-  const offsetX = canvasW / 2 - centerX * scale;
-  const offsetY = canvasH / 2 + centerY * scale;
-  return { scale, offsetX, offsetY };
+  const pad = paddingCells + 0.5;
+  const worldHalfW = halfX + pad;
+  const worldHalfH = halfY + pad;
+  const scale = Math.min(canvasW / (2 * worldHalfW), canvasH / (2 * worldHalfH));
+  // screen center = canvas center; offset is independent of scale, so easing the
+  // scale never moves the origin. Screen y is flipped (world +y is up).
+  return { scale, offsetX: canvasW / 2, offsetY: canvasH / 2 };
 }
 
 export function worldToScreen(cam: Camera, x: number, y: number): { sx: number; sy: number } {

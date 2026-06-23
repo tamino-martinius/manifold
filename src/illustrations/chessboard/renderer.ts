@@ -21,7 +21,10 @@ const OUTLINE = "rgba(255, 255, 255, 0.5)";
 const MIN_CELL_PX_FOR_NUMBERS = 22;
 const CHECKER_FADE_FULL = 16; // >= this cell size: full light/dark contrast
 const CHECKER_FADE_ZERO = 6; //  <= this cell size: uniform mid tone (pattern gone)
-const MIN_CELL_PX_FOR_ARCS = 7; // below this pieces draw as squares (cheaper than arcs)
+// Pieces grow as cells shrink: discs at/above PIECE_GROW_FROM, full overlapping
+// cell squares at/below PIECE_GROW_TO (passing through rounded rects between).
+const PIECE_GROW_FROM = 16;
+const PIECE_GROW_TO = 4;
 
 function rgbStr(c: readonly [number, number, number]): string {
   return `rgb(${c[0] | 0}, ${c[1] | 0}, ${c[2] | 0})`;
@@ -97,44 +100,42 @@ export function renderBoard(
   }
 
   // Pieces — batched by color (one path/fill per color). Inline the transform
-  // and cull off-screen so 100k+ stays cheap. Arcs when zoomed in, squares out.
+  // and cull off-screen so 100k+ stays cheap. The shape grows with zoom-out:
+  // small discs → rounded rects → full, slightly-overlapping cell squares (which
+  // removes the board gaps that aliased at huge counts).
   const limit = Math.min(Math.floor(frame), placed.count);
   if (limit <= 0) return;
   const { xs, ys, colorIndex, colors } = placed;
-  const drawArcs = cellPx >= MIN_CELL_PX_FOR_ARCS;
-  const r = Math.max(1, half * 0.7);
-  const sz = Math.max(1, cellPx * 0.82);
+
+  let gt = (PIECE_GROW_FROM - cellPx) / (PIECE_GROW_FROM - PIECE_GROW_TO);
+  gt = gt < 0 ? 0 : gt > 1 ? 1 : gt;
+  const ge = gt * gt * (3 - 2 * gt); // smoothstep
+  // 0.72 of the cell when zoomed in → full cell + a small overlap to seal seams.
+  const size = Math.max(1.5, (0.72 + 0.28 * ge) * cellPx + ge * 0.75);
+  const o = size / 2;
+  const radius = o * (1 - ge); // circle (o) → rounded rect → sharp square (0)
+  const rounded = radius >= 0.5;
+  const drawOutline = cellPx >= MIN_CELL_PX_FOR_NUMBERS;
   const off = -cellPx;
   const maxX = canvasW + cellPx;
   const maxY = canvasH + cellPx;
 
   for (let c = 0; c < colors.length; c++) {
     ctx.fillStyle = colors[c];
-    if (drawArcs) {
-      ctx.beginPath();
-      for (let i = 0; i < limit; i++) {
-        if (colorIndex[i] !== c) continue;
-        const sx = xs[i] * cam.scale + cam.offsetX;
-        const sy = -ys[i] * cam.scale + cam.offsetY;
-        if (sx < off || sx > maxX || sy < off || sy > maxY) continue;
-        ctx.moveTo(sx + r, sy);
-        ctx.arc(sx, sy, r, 0, Math.PI * 2);
-      }
-      ctx.fill();
-      if (cellPx >= MIN_CELL_PX_FOR_NUMBERS) {
-        ctx.lineWidth = Math.max(1, cellPx * 0.04);
-        ctx.strokeStyle = OUTLINE;
-        ctx.stroke();
-      }
-    } else {
-      const o = sz / 2;
-      for (let i = 0; i < limit; i++) {
-        if (colorIndex[i] !== c) continue;
-        const sx = xs[i] * cam.scale + cam.offsetX;
-        const sy = -ys[i] * cam.scale + cam.offsetY;
-        if (sx < off || sx > maxX || sy < off || sy > maxY) continue;
-        ctx.fillRect(sx - o, sy - o, sz, sz);
-      }
+    ctx.beginPath();
+    for (let i = 0; i < limit; i++) {
+      if (colorIndex[i] !== c) continue;
+      const sx = xs[i] * cam.scale + cam.offsetX;
+      const sy = -ys[i] * cam.scale + cam.offsetY;
+      if (sx < off || sx > maxX || sy < off || sy > maxY) continue;
+      if (rounded) ctx.roundRect(sx - o, sy - o, size, size, radius);
+      else ctx.rect(sx - o, sy - o, size, size);
+    }
+    ctx.fill();
+    if (drawOutline) {
+      ctx.lineWidth = Math.max(1, cellPx * 0.04);
+      ctx.strokeStyle = OUTLINE;
+      ctx.stroke();
     }
   }
 }

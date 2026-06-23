@@ -2,6 +2,7 @@ import { pickDistinctColor } from "../../../shared/color";
 import { clear, el } from "../../../shared/dom";
 import { icon } from "../../../shared/icons";
 import type { Store } from "../../../shared/store";
+import type { ResourceLink } from "../links";
 import { clampOffsets, knightOffsets } from "../pieces";
 import { MOVEMENT_PRESETS, type MovementPreset, presetNameFor } from "../presets";
 import type { ChessboardState } from "../state";
@@ -112,10 +113,37 @@ function presetPicker(piece: Piece, onPick: (preset: MovementPreset) => void): H
   return wrap;
 }
 
+function linksSection(links: ResourceLink[]): HTMLElement {
+  const list = el("div", { className: "cb-links" });
+  for (const v of links) {
+    list.append(
+      el(
+        "a",
+        {
+          className: `cb-link cb-link--${v.kind}`,
+          href: v.url,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          title: v.title,
+        },
+        [
+          icon(v.kind === "video" ? "youtube" : "hash", 16),
+          el("span", { className: "cb-link-text" }, [
+            el("span", { className: "cb-link-title" }, [v.title]),
+            el("span", { className: "ds-label cb-link-label" }, [v.label]),
+          ]),
+        ],
+      ),
+    );
+  }
+  return list;
+}
+
 export function mountPanel(
   host: HTMLElement,
   store: Store<ChessboardState>,
   onChange: () => void,
+  links: ResourceLink[] = [],
 ): void {
   let scrubEl: HTMLInputElement | null = null;
   let playBtn: HTMLButtonElement | null = null;
@@ -303,6 +331,8 @@ export function mountPanel(
       piecesHeader,
       piecesGrid,
     );
+
+    if (links.length > 0) host.append(sectionLabel("Links"), linksSection(links));
 
     lastStructKey = structKey(s);
     syncLive(s);

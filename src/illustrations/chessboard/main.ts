@@ -1,12 +1,12 @@
 import "../../styles/manifold/styles.css";
 import "./chessboard.css";
-import logoMark from "../../assets/manifold/logo-mark.svg?raw";
 import { el } from "../../shared/dom";
 import { initTheme } from "../../shared/theme";
 import { themeToggle } from "../../shared/theme-toggle";
 import { createAnimator } from "./animation";
 import { easeScale, fitFromExtent } from "./camera";
 import { createEngine } from "./engine";
+import { CHESSBOARD_LINKS } from "./links";
 import { mountPanel } from "./panel/panel";
 import { renderBoard } from "./renderer";
 import { type ChessboardState, createChessboardStore } from "./state";
@@ -19,15 +19,8 @@ const ZOOM_SMOOTH_RATE = 8;
 const BASE_RATE = 6; // pieces/sec near the start
 const GROWTH_RATE = 1.1; // + this fraction of the placed count per second
 
-function logo(): HTMLElement {
-  const span = el("span", { className: "cb-logo", "aria-hidden": "true" });
-  span.innerHTML = logoMark;
-  return span;
-}
-
 function toolbar(): HTMLElement {
   const brand = el("a", { className: "cb-brand", href: "../", title: "Back to atlas" }, [
-    logo(),
     el("span", { className: "cb-wordmark" }, ["manifold"]),
   ]);
   return el("header", { className: "cb-toolbar" }, [
@@ -140,7 +133,7 @@ function mount(root: HTMLElement): void {
     );
   };
 
-  mountPanel(panelEl, store, () => engine.recompute());
+  mountPanel(panelEl, store, () => engine.recompute(), CHESSBOARD_LINKS);
 
   const animator = createAnimator({
     isPlaying: () => store.get().playing,

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toothpick Patterns — manifold</title>
+    <script>
+      // No-flash theme: resolve before first paint (OS preference unless overridden).
+      (function () {
+        try {
+          var s = localStorage.getItem("manifold-theme");
+          var t =
+            s === "dark" || s === "light"
+              ? s
+              : window.matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark";
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/illustrations/toothpicks/main.ts"></script>
+  </body>
+</html>

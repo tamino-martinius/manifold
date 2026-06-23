@@ -49,7 +49,7 @@ function linkDropdown(label: string, links: ResourceLink[]): HTMLElement {
     el("span", {}, [label]),
     icon("chevron-down", 13),
   ]);
-  const wrap = el("div", { className: "cb-dd" }, [trigger, menu]);
+  const wrap = el("div", { className: "cb-dd" }, [trigger]);
 
   const onDoc = (e: MouseEvent): void => {
     if (!wrap.contains(e.target as Node) && !menu.contains(e.target as Node)) close();
@@ -58,22 +58,26 @@ function linkDropdown(label: string, links: ResourceLink[]): HTMLElement {
     if (!menu.contains(e.target as Node)) close();
   };
   function close(): void {
-    wrap.classList.remove("is-open");
+    menu.classList.remove("is-open");
+    menu.remove();
     document.removeEventListener("mousedown", onDoc);
     window.removeEventListener("scroll", onScroll, true);
     window.removeEventListener("resize", close);
   }
   function open(): void {
+    // Portal the menu to <body> so it isn't clipped behind the canvas by the
+    // toolbar's backdrop-filter stacking context. Capped to 400px tall.
+    document.body.append(menu);
     const rect = trigger.getBoundingClientRect();
     menu.style.top = `${Math.round(rect.bottom + 6)}px`;
     menu.style.right = `${Math.round(window.innerWidth - rect.right)}px`;
-    menu.style.maxHeight = `${Math.max(160, Math.floor(window.innerHeight - rect.bottom - 16))}px`;
-    wrap.classList.add("is-open");
+    menu.style.maxHeight = `${Math.min(400, Math.max(160, Math.floor(window.innerHeight - rect.bottom - 16)))}px`;
+    menu.classList.add("is-open");
     document.addEventListener("mousedown", onDoc);
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
   }
-  trigger.addEventListener("click", () => (wrap.classList.contains("is-open") ? close() : open()));
+  trigger.addEventListener("click", () => (menu.classList.contains("is-open") ? close() : open()));
   menu.addEventListener("click", (e) => {
     if ((e.target as HTMLElement).closest("a")) close();
   });

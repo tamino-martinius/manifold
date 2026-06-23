@@ -1,0 +1,45 @@
+/* Prime polar spiral studio — reuses the chessboard studio chrome verbatim so
+   the atlas reads as one product. */
+@import "../chessboard/chessboard.css";
+
+/* ---- Color-by-mod slider: live value readout + a tick marking 44 ---- */
+.ps-mod-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.ps-mod-slider {
+  position: relative;
+  /* room below the track for the tick's "44" caption */
+  padding-bottom: 13px;
+}
+.ps-mod-ticks {
+  position: absolute;
+  /* inset by half the slider thumb so 0%..100% maps to the thumb-center travel */
+  left: 6.5px;
+  right: 6.5px;
+  top: 0;
+  height: 16px;
+  pointer-events: none;
+}
+.ps-mod-tick {
+  position: absolute;
+  top: 3px;
+  width: 2px;
+  height: 10px;
+  transform: translateX(-50%);
+  background: var(--accent);
+  border-radius: 1px;
+}
+.ps-mod-tick-label {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-3xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-faint);
+}

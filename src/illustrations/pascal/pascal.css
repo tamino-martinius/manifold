@@ -1,0 +1,11 @@
+/* Pascal mod n — Pascal-specific tweaks layered on the reused chessboard chrome
+   (main.ts also imports chessboard.css, so the toolbar/panel look identical). */
+
+/* Live modulus readout sitting in the field header next to the mono micro-label. */
+.pa-readout {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent);
+}

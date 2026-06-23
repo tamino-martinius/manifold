@@ -6,10 +6,10 @@ import type { PlacedData } from "./types";
 type DoneMessage = {
   type: "done";
   token: number;
-  x1: Int32Array;
-  y1: Int32Array;
-  x2: Int32Array;
-  y2: Int32Array;
+  x1: Float32Array;
+  y1: Float32Array;
+  x2: Float32Array;
+  y2: Float32Array;
   colorIndex: Uint8Array;
   instanceIndex: Uint32Array;
   colors: string[];

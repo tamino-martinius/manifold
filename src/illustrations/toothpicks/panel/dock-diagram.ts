@@ -1,8 +1,9 @@
+import { pointToScreen } from "../geometry";
 import type { Dir, DockSpec, Segment } from "../types";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 
-/** Canonical-frame bounds, including the in-dock arrow stub at (-1.3, 0). */
+/** Screen-space bounds, including the in-dock arrow stub at (-1.3, 0). */
 export function diagramBounds(
   outDocks: DockSpec[],
   visual: Segment[],
@@ -17,11 +18,16 @@ export function diagramBounds(
     if (y < minY) minY = y;
     if (y > maxY) maxY = y;
   };
-  for (const s of visual) {
-    ext(s.x1, s.y1);
-    ext(s.x2, s.y2);
+  for (const seg of visual) {
+    const a = pointToScreen(seg.a);
+    const b = pointToScreen(seg.b);
+    ext(a.x, a.y);
+    ext(b.x, b.y);
   }
-  for (const d of outDocks) ext(d.dx, d.dy);
+  for (const d of outDocks) {
+    const a = pointToScreen(d.at);
+    ext(a.x, a.y);
+  }
   return { minX, minY, maxX, maxY };
 }
 
@@ -31,17 +37,20 @@ function svgEl(tag: string, attrs: Record<string, string | number>): SVGElement 
   return node;
 }
 
+// Unit screen vector for a direction (E=0 … SE=7), for the out-dock stub.
+const SQ = Math.SQRT1_2;
+const DIR_SCREEN: [number, number][] = [
+  [1, 0], // E
+  [SQ, SQ], // NE
+  [0, 1], // N
+  [-SQ, SQ], // NW
+  [-1, 0], // W
+  [-SQ, -SQ], // SW
+  [0, -1], // S
+  [SQ, -SQ], // SE
+];
 function dirVec(dir: Dir): [number, number] {
-  switch (dir) {
-    case 0:
-      return [1, 0];
-    case 1:
-      return [0, 1];
-    case 2:
-      return [-1, 0];
-    default:
-      return [0, -1];
-  }
+  return DIR_SCREEN[dir];
 }
 
 /**
@@ -69,13 +78,15 @@ export function dockDiagram(
   svg.setAttribute("width", String(px));
   svg.setAttribute("height", String(Math.round((px * vbH) / vbW)));
 
-  for (const s of visual) {
+  for (const seg of visual) {
+    const a = pointToScreen(seg.a);
+    const bb = pointToScreen(seg.b);
     svg.append(
       svgEl("line", {
-        x1: s.x1,
-        y1: Y(s.y1),
-        x2: s.x2,
-        y2: Y(s.y2),
+        x1: a.x,
+        y1: Y(a.y),
+        x2: bb.x,
+        y2: Y(bb.y),
         stroke: color,
         "stroke-width": 0.2,
         "stroke-linecap": "round",
@@ -99,14 +110,15 @@ export function dockDiagram(
 
   // Out-docks: dot + short stub in the outgoing direction.
   for (const d of outDocks) {
+    const a = pointToScreen(d.at);
     const [ux, uy] = dirVec(d.dir);
-    svg.append(svgEl("circle", { cx: d.dx, cy: Y(d.dy), r: 0.16, fill: "var(--accent)" }));
+    svg.append(svgEl("circle", { cx: a.x, cy: Y(a.y), r: 0.16, fill: "var(--accent)" }));
     svg.append(
       svgEl("line", {
-        x1: d.dx,
-        y1: Y(d.dy),
-        x2: d.dx + ux * 0.55,
-        y2: Y(d.dy + uy * 0.55),
+        x1: a.x,
+        y1: Y(a.y),
+        x2: a.x + ux * 0.55,
+        y2: Y(a.y + uy * 0.55),
         stroke: "var(--accent)",
         "stroke-width": 0.13,
         "stroke-linecap": "round",

@@ -18,10 +18,10 @@ export type ToothpickState = {
 };
 
 export const EMPTY_PLACED: PlacedData = {
-  x1: new Int32Array(0),
-  y1: new Int32Array(0),
-  x2: new Int32Array(0),
-  y2: new Int32Array(0),
+  x1: new Float32Array(0),
+  y1: new Float32Array(0),
+  x2: new Float32Array(0),
+  y2: new Float32Array(0),
   colorIndex: new Uint8Array(0),
   instanceIndex: new Uint32Array(0),
   colors: [],

@@ -4,7 +4,7 @@ import { SHAPE_PRESETS, STRAIGHT, defaultShapes, presetNameFor } from "./presets
 describe("presets", () => {
   it("Straight emits two perpendicular out-docks (N and S)", () => {
     expect(STRAIGHT.outDocks).toHaveLength(2);
-    expect(STRAIGHT.outDocks.map((d) => d.dir).sort()).toEqual([1, 3]);
+    expect(STRAIGHT.outDocks.map((d) => d.dir).sort((a, b) => a - b)).toEqual([2, 6]);
   });
   it("has four uniquely-named presets", () => {
     const names = SHAPE_PRESETS.map((p) => p.name);

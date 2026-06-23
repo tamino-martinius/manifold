@@ -1,57 +1,63 @@
-import type { Dir, DockSpec, Segment, Shape } from "./types";
+import type { Dir, DockSpec, Pt, Segment, Shape } from "./types";
 
 export type ShapePreset = { name: string; outDocks: DockSpec[]; visual: Segment[] };
 
 const E: Dir = 0;
-const N: Dir = 1;
-const W: Dir = 2;
-const S: Dir = 3;
+const N: Dir = 2;
+const W: Dir = 4;
+const S: Dir = 6;
 
-// All presets are authored in the canonical frame: in-dock at the origin with
-// growth arriving from the West (incoming direction East). Logic = outDocks;
-// `visual` is cosmetic. STRAIGHT reproduces A139250 exactly and must not change.
+// Point in the exact (p,q,r,s) basis (p·E + q·NE + r·N + s·NW).
+function pt(p: number, q: number, r: number, s: number): Pt {
+  return { p, q, r, s };
+}
+const O = pt(0, 0, 0, 0);
+
+// Authored in the canonical frame: in-dock at the origin, growth arriving from the
+// West (incoming direction East). Logic = outDocks; `visual` is cosmetic. STRAIGHT
+// reproduces A139250 exactly and must not change.
 export const STRAIGHT: ShapePreset = {
   name: "Straight",
   outDocks: [
-    { dx: 0, dy: 1, dir: N },
-    { dx: 0, dy: -1, dir: S },
+    { at: pt(0, 0, 1, 0), dir: N },
+    { at: pt(0, 0, -1, 0), dir: S },
   ],
-  visual: [{ x1: 0, y1: -1, x2: 0, y2: 1 }],
+  visual: [{ a: pt(0, 0, -1, 0), b: pt(0, 0, 1, 0) }],
 };
 
 export const TEE: ShapePreset = {
   name: "T",
   outDocks: [
-    { dx: 0, dy: 1, dir: N },
-    { dx: 0, dy: -1, dir: S },
-    { dx: 1, dy: 0, dir: E },
+    { at: pt(0, 0, 1, 0), dir: N },
+    { at: pt(0, 0, -1, 0), dir: S },
+    { at: pt(1, 0, 0, 0), dir: E },
   ],
   visual: [
-    { x1: 0, y1: -1, x2: 0, y2: 1 },
-    { x1: 0, y1: 0, x2: 1, y2: 0 },
+    { a: pt(0, 0, -1, 0), b: pt(0, 0, 1, 0) },
+    { a: O, b: pt(1, 0, 0, 0) },
   ],
 };
 
 export const BEND: ShapePreset = {
   name: "Bend",
-  outDocks: [{ dx: 1, dy: 1, dir: N }],
+  outDocks: [{ at: pt(1, 0, 1, 0), dir: N }],
   visual: [
-    { x1: 0, y1: 0, x2: 1, y2: 0 },
-    { x1: 1, y1: 0, x2: 1, y2: 1 },
+    { a: O, b: pt(1, 0, 0, 0) },
+    { a: pt(1, 0, 0, 0), b: pt(1, 0, 1, 0) },
   ],
 };
 
 export const CROSS: ShapePreset = {
   name: "Cross",
   outDocks: [
-    { dx: 0, dy: 1, dir: N },
-    { dx: 0, dy: -1, dir: S },
-    { dx: 1, dy: 0, dir: E },
-    { dx: -1, dy: 0, dir: W },
+    { at: pt(0, 0, 1, 0), dir: N },
+    { at: pt(0, 0, -1, 0), dir: S },
+    { at: pt(1, 0, 0, 0), dir: E },
+    { at: pt(-1, 0, 0, 0), dir: W },
   ],
   visual: [
-    { x1: 0, y1: -1, x2: 0, y2: 1 },
-    { x1: -1, y1: 0, x2: 1, y2: 0 },
+    { a: pt(0, 0, -1, 0), b: pt(0, 0, 1, 0) },
+    { a: pt(-1, 0, 0, 0), b: pt(1, 0, 0, 0) },
   ],
 };
 

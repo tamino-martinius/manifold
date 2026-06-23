@@ -1,19 +1,22 @@
-// Logical direction on the lattice, math coords with +y up: 0=E, 1=N, 2=W, 3=S.
-export type Dir = 0 | 1 | 2 | 3;
+// Lattice direction on the octagonal grid, math coords with +y up.
+// 0=E, 1=NE, 2=N, 3=NW, 4=W, 5=SW, 6=S, 7=SE (count of 45° CCW turns from East).
+export type Dir = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export type StrategyKind = "round-robin" | "weighted";
 
-// An exposed docking point in world space: lattice point + outgoing direction.
-export type Dock = { x: number; y: number; dir: Dir };
+// Exact lattice point: p·E + q·NE + r·N + s·NW (E,N are axis units; NE,NW diagonal
+// units of length 1). Two points coincide iff all four integers match.
+export type Pt = { p: number; q: number; r: number; s: number };
 
-// A docking point a shape emits, relative to its canonical frame.
-export type DockSpec = { dx: number; dy: number; dir: Dir };
+// A docking point: a lattice point + the outgoing direction growth continues in.
+// Used for a shape's canonical out-docks and for live (absolute) docks alike.
+export type DockSpec = { at: Pt; dir: Dir };
 
-// A cosmetic line segment in the shape's canonical frame (lattice units).
-export type Segment = { x1: number; y1: number; x2: number; y2: number };
+// A cosmetic line segment, both endpoints as exact lattice points.
+export type Segment = { a: Pt; b: Pt };
 
-// A configurable toothpick shape — the analog of a chessboard piece. Growth uses
-// only `outDocks`; `visual` is drawn but never consulted by the algorithm.
+// A configurable toothpick shape. Growth uses only `outDocks`; `visual` is drawn
+// but never consulted by the algorithm.
 export type Shape = {
   id: string;
   name: string;
@@ -23,22 +26,22 @@ export type Shape = {
   visual: Segment[];
 };
 
-// One placed shape instance ("one toothpick"): its drawn segments in world coords.
+// One placed shape instance ("one toothpick"): drawn segments in lattice space.
 export type Instance = { generation: number; color: string; segments: Segment[] };
 
 /**
- * Columnar form for rendering + zero-copy worker transfer. One entry per drawn
- * segment; `instanceIndex[i]` is the 0-based ordinal (ascending) of the toothpick
- * the segment belongs to, `colorIndex[i]` indexes `colors`. `count` is the number
- * of instances (toothpicks) and equals A139250(maxGen) for the Straight preset.
- * `genEnds[g]` is the cumulative instance count through generation g (for the
- * Step-one-generation button).
+ * Columnar form for rendering + zero-copy worker transfer. Segment endpoints are
+ * WORLD (screen) floats — diagonal points aren't integers — so the four coord
+ * arrays are Float32Array. `instanceIndex[i]` is the ascending 0-based ordinal of
+ * the toothpick the segment belongs to; `colorIndex[i]` indexes `colors`. `count`
+ * is the number of instances (= A139250(maxGen) for Straight). `genEnds[g]` is the
+ * cumulative instance count through generation g (Step-one-generation button).
  */
 export type PlacedData = {
-  x1: Int32Array;
-  y1: Int32Array;
-  x2: Int32Array;
-  y2: Int32Array;
+  x1: Float32Array;
+  y1: Float32Array;
+  x2: Float32Array;
+  y2: Float32Array;
   colorIndex: Uint8Array;
   instanceIndex: Uint32Array;
   colors: string[];

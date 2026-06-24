@@ -4,6 +4,7 @@ import { mountDragonPreview } from "../illustrations/dragon/preview";
 import { mountFordCirclesPreview } from "../illustrations/ford-circles/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
+import { mountLangtonsAntPreview } from "../illustrations/langtons-ant/preview";
 import { mountPascalPreview } from "../illustrations/pascal/preview";
 import { mountPrimeSpiralPreview } from "../illustrations/prime-spiral/preview";
 import { mountRecamanPreview } from "../illustrations/recaman/preview";
@@ -106,5 +107,13 @@ export const illustrations: Illustration[] = [
       "Alternating up/down semicircular arcs along a number line trace Recamán's sequence into a non-crossing web.",
     route: "recaman/",
     mountPreview: mountRecamanPreview,
+  },
+  {
+    id: "langtons-ant",
+    title: "Langton's Ant",
+    description:
+      "One ant, two turn rules, an all-white grid — chaos for ~10,000 steps, then an abrupt periodic highway to infinity.",
+    route: "langtons-ant/",
+    mountPreview: mountLangtonsAntPreview,
   },
 ];

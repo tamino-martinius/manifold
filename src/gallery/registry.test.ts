@@ -101,7 +101,16 @@ describe("registry", () => {
     expect(typeof r?.mountPreview).toBe("function");
   });
 
-  it("lists the recaman illustration last", () => {
-    expect(illustrations[illustrations.length - 1]?.id).toBe("recaman");
+  it("includes the langtons-ant illustration with required fields", () => {
+    const ant = illustrations.find((i) => i.id === "langtons-ant");
+    expect(ant).toBeDefined();
+    expect(ant?.route).toBe("langtons-ant/");
+    expect(ant?.title.length).toBeGreaterThan(0);
+    expect(ant?.description.length).toBeGreaterThan(0);
+    expect(typeof ant?.mountPreview).toBe("function");
+  });
+
+  it("lists the langtons-ant illustration last", () => {
+    expect(illustrations[illustrations.length - 1]?.id).toBe("langtons-ant");
   });
 });

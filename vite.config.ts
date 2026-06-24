@@ -18,6 +18,7 @@ export default defineConfig({
         "prime-spiral": resolve(__dirname, "prime-spiral/index.html"),
         collatz: resolve(__dirname, "collatz/index.html"),
         recaman: resolve(__dirname, "recaman/index.html"),
+        "langtons-ant": resolve(__dirname, "langtons-ant/index.html"),
       },
     },
   },

@@ -11,6 +11,7 @@ Live: **[manifold.tamino.dev](https://manifold.tamino.dev)**
 | Preview | Illustration | Description |
 | :-----: | ------------ | ----------- |
 | <a href="https://manifold.tamino.dev/chessboard/"><img src="docs/previews/chessboard.png" alt="Chessboard Patterns" width="240"></a> | **[Chessboard Patterns](https://manifold.tamino.dev/chessboard/)** | Pieces drop onto a counter-clockwise number spiral, each taking the lowest-indexed cell no opposing piece attacks. Accelerating, smoothly-zooming fill (cell&nbsp;1 stays centered); scrub the timeline, and configure pieces — colour, movement grid (29 symmetric presets), weight — and round-robin / weighted placement. Scales to **1,000,000** pieces, computed in a Web Worker with a progress bar so the UI never freezes. |
+| <a href="https://manifold.tamino.dev/langtons-ant/"><img src="docs/previews/langtons-ant.png" alt="Langton's Ant" width="240"></a> | **[Langton's Ant](https://manifold.tamino.dev/langtons-ant/)** | One ant follows two turn-and-flip rules on a blank grid: ~10,000 steps of apparent chaos, then it locks into a periodic 104-step "highway" to infinity. Fast-forward through the chaos (exponential speed up to **5,000** steps/frame) and watch order crystallise live, or jump ahead **+10K / +100K / +1M** steps at a time. Follow-ant / fit-region cameras, an optional comet trail, a live **STEP / BLACK** readout matching [OEIS&nbsp;A255938](https://oeis.org/A255938), and turmite rule strings (`RL`, `RLR`, `LLRR`, free text over `L R U N`). |
 
 ## Theme
 

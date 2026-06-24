@@ -10,4 +10,13 @@ describe("registry", () => {
     expect(chess?.description.length).toBeGreaterThan(0);
     expect(typeof chess?.mountPreview).toBe("function");
   });
+
+  it("includes the langtons-ant illustration with required fields", () => {
+    const ant = illustrations.find((i) => i.id === "langtons-ant");
+    expect(ant).toBeDefined();
+    expect(ant?.route).toBe("langtons-ant/");
+    expect(ant?.title.length).toBeGreaterThan(0);
+    expect(ant?.description.length).toBeGreaterThan(0);
+    expect(typeof ant?.mountPreview).toBe("function");
+  });
 });

@@ -1,0 +1,84 @@
+/* Langton's Ant — small additions layered on the reused chessboard chrome. */
+
+.la-meta {
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Rule string input ---- */
+.la-rule-row {
+  display: flex;
+}
+.la-rule-input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text);
+  background: var(--bg-sunken);
+  border: var(--border-thin) solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.la-rule-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+.la-rule-input.is-invalid {
+  border-color: var(--danger);
+}
+.la-rule-error {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--danger);
+}
+.la-rule-error.is-visible {
+  display: block;
+}
+
+/* ---- Live readouts ---- */
+.la-readouts {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.la-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.la-readout-key {
+  color: var(--text-faint);
+}
+.la-readout-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* ---- Highway badge (shown once the period is detected) ---- */
+.la-badge {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 4px 9px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-radius: var(--radius-full);
+  box-shadow: var(--glow-accent);
+}
+.la-badge.is-visible {
+  display: inline-flex;
+}

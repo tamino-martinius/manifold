@@ -1,0 +1,3 @@
+/* Recamán studio — reuses the chessboard studio chrome (cb-* classes) so the
+   toolbar/panel/canvas shell is identical across the atlas. */
+@import "../chessboard/chessboard.css";

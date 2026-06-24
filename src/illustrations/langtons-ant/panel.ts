@@ -1,4 +1,5 @@
 import { clear, el } from "../../shared/dom";
+import { groupThousands } from "../../shared/format";
 import { icon } from "../../shared/icons";
 import type { Store } from "../../shared/store";
 // Reuse the shared Manifold control builders from the chessboard panel.
@@ -36,10 +37,6 @@ function setPlayContent(btn: HTMLButtonElement, playing: boolean): void {
   );
 }
 
-function fmt(n: number): string {
-  return n.toLocaleString("en-US");
-}
-
 function sectionLabel(text: string): HTMLElement {
   return el("div", { className: "cb-section" }, [el("span", { className: "ds-label" }, [text])]);
 }
@@ -66,15 +63,15 @@ export function mountPanel(
   const syncLive = (s: LangtonState): void => {
     if (playBtn) setPlayContent(playBtn, s.playing);
     if (speedSlider && document.activeElement !== speedSlider) speedSlider.value = String(s.speed);
-    if (speedReadout) speedReadout.textContent = `${fmt(stepsPerFrame(s.speed))}/frame`;
+    if (speedReadout) speedReadout.textContent = `${groupThousands(stepsPerFrame(s.speed))}/frame`;
     if (ruleInput && document.activeElement !== ruleInput) ruleInput.value = s.rule;
     if (ruleInput) ruleInput.classList.toggle("is-invalid", s.ruleError !== null);
     if (ruleError) {
       ruleError.textContent = s.ruleError ?? "";
       ruleError.classList.toggle("is-visible", s.ruleError !== null);
     }
-    if (stepReadout) stepReadout.textContent = fmt(s.steps);
-    if (blackReadout) blackReadout.textContent = fmt(s.blackCount);
+    if (stepReadout) stepReadout.textContent = groupThousands(s.steps);
+    if (blackReadout) blackReadout.textContent = groupThousands(s.blackCount);
     if (highwayBadge) highwayBadge.classList.toggle("is-visible", s.highway);
   };
 
@@ -98,7 +95,7 @@ export function mountPanel(
       onInput: (v) => store.set({ speed: v }),
     });
     speedReadout = el("span", { className: "ds-label la-meta" }, [
-      `${fmt(stepsPerFrame(s.speed))}/frame`,
+      `${groupThousands(stepsPerFrame(s.speed))}/frame`,
     ]);
     const speedHead = el("div", { className: "cb-field-head" }, [
       el("span", { className: "cb-field-label ds-label" }, ["Speed"]),
@@ -158,8 +155,8 @@ export function mountPanel(
     );
 
     // ---- Readouts ----
-    stepReadout = el("span", { className: "la-readout-value" }, [fmt(s.steps)]);
-    blackReadout = el("span", { className: "la-readout-value" }, [fmt(s.blackCount)]);
+    stepReadout = el("span", { className: "la-readout-value" }, [groupThousands(s.steps)]);
+    blackReadout = el("span", { className: "la-readout-value" }, [groupThousands(s.blackCount)]);
     highwayBadge = el("div", { className: "la-badge" }, [
       icon("hash", 12),
       el("span", {}, ["Highway"]),

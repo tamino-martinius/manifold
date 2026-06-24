@@ -1,6 +1,7 @@
 import "../styles/manifold/styles.css";
 import "./gallery.css";
 import { el } from "../shared/dom";
+import { pageFooter } from "../shared/footer";
 import { icon } from "../shared/icons";
 import { initTheme } from "../shared/theme";
 import { themeToggle } from "../shared/theme-toggle";
@@ -47,7 +48,9 @@ function card(illo: Illustration, index: number): HTMLElement {
     el("h2", { className: "m-card-title" }, [illo.title]),
     el("p", { className: "ds-prose m-card-blurb" }, [illo.description]),
   ]);
-  const node = el("a", { className: "m-card", href: illo.route }, [figure, body]);
+  // Absolute (root-relative) so the link replaces the path instead of appending
+  // to it when the gallery is viewed from a non-root URL (the site deploys at /).
+  const node = el("a", { className: "m-card", href: `/${illo.route}` }, [figure, body]);
   // Mount the live preview once the canvas is attached to the DOM.
   requestAnimationFrame(() => illo.mountPreview(canvas));
   return node;
@@ -66,7 +69,7 @@ function mount(root: HTMLElement): void {
     grid,
   ]);
 
-  root.append(el("div", { className: "m-page" }, [header(), hero(), main]));
+  root.append(el("div", { className: "m-page" }, [header(), hero(), main, pageFooter()]));
 }
 
 const root = document.getElementById("gallery");

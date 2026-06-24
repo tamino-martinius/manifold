@@ -1,0 +1,22 @@
+/* Hilbert studio — reuses the chessboard `cb-*` chrome (imported in main.ts);
+   only the order readout below is specific to this illustration. */
+
+.hl-readout {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: -2px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.hl-readout-grid {
+  color: var(--text);
+}
+.hl-readout-sep {
+  color: var(--text-faint);
+}
+.hl-readout-n {
+  color: var(--accent);
+}

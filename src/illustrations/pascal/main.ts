@@ -297,14 +297,18 @@ function mount(root: HTMLElement): void {
   };
   canvas.addEventListener("pointerup", endDrag);
   canvas.addEventListener("pointercancel", endDrag);
-  // Double-click → back to the auto-fit reveal framing (snap re-fit next frame).
-  canvas.addEventListener("dblclick", () => {
+  // Back to the auto-fit reveal framing (snap re-fit next frame), shared by the
+  // double-click gesture and the panel's "Replay" button.
+  const resetCamera = (): void => {
     manual = false;
     displayScale = 0;
-  });
+  };
+  canvas.addEventListener("dblclick", resetCamera);
   canvas.style.cursor = "grab";
 
-  mountPanel(panelEl, store);
+  // Replay restarts the reveal from the top; drop any manual zoom so it re-runs
+  // the initial auto-fit animation (zoom in on the apex, zoom out as rows reveal).
+  mountPanel(panelEl, store, resetCamera);
 
   const animator = createAnimator({
     isPlaying: () => store.get().playing,

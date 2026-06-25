@@ -67,10 +67,12 @@ describe("row build and Lucas agree where both apply (prime m)", () => {
     }
   });
 
-  it("agrees at the largest supported prime (p=47, i ≤ 60 → 2-digit base-47)", () => {
-    const p = 47;
-    const res = buildResidues(61, p);
-    for (let i = 0; i <= 60; i++) {
+  it("agrees at the largest supported prime (p=127, i ≤ 130 → 2-digit base-127)", () => {
+    // i = 126 forces the per-digit binomial C(126, 63) ≈ 6.6e36, which overflows
+    // Number — lucasMod must compute it mod p exactly, matching the exact recurrence.
+    const p = 127;
+    const res = buildResidues(131, p);
+    for (let i = 0; i <= 130; i++) {
       for (let j = 0; j <= i; j++) {
         expect(at(res, i, j)).toBe(lucasMod(i, j, p));
       }

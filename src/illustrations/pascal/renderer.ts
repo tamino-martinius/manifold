@@ -4,10 +4,12 @@ import { type PascalResidues, isPerfect, isPrime, lucasMod } from "./pascal";
 import type { ColorMode } from "./state";
 
 // The gradient ramps each color mode draws from (parsed from the --pal-* tokens).
-// Class modes (prime / perfect) pick a ramp per class and vary the SHADE by the
-// residue value, so "different primes → different shades of the same color".
+// Class modes (parity / prime / perfect) pick a ramp per class and vary the SHADE
+// by the residue value, so "different odd residues → different shades of warm".
 export type PascalRamps = {
   spectral: RGB[]; // hue-by-residue
+  odd: RGB[]; // odd residues
+  even: RGB[]; // even residues
   prime: RGB[]; // prime residues
   nonPrime: RGB[]; // non-prime residues
   perfect: RGB[]; // perfect residues
@@ -55,6 +57,10 @@ function cellColor(mode: ColorMode, v: number, denom: number, colors: PascalColo
   switch (mode) {
     case "hue":
       return sampleRamp(colors.ramps.spectral, t);
+    case "parity":
+      return v % 2 === 1
+        ? sampleRamp(colors.ramps.odd, lerp(0.45, 1, t))
+        : sampleRamp(colors.ramps.even, lerp(0.45, 0.95, t));
     case "prime":
       return isPrime(v)
         ? sampleRamp(colors.ramps.prime, lerp(0.45, 1, t))

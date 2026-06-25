@@ -131,6 +131,7 @@ export function mountPanel(
       [
         { value: "binary", label: "Binary" },
         { value: "hue", label: "Hue" },
+        { value: "parity", label: "Parity" },
         { value: "prime", label: "Prime" },
         { value: "perfect", label: "Perfect" },
       ],

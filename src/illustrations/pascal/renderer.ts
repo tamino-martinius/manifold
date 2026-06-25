@@ -90,7 +90,7 @@ export function renderPascal(
   const { m, colorMode, residues, colors } = input;
   const res = residues;
 
-  // Precompute the color of each nonzero residue 1..m-1 once per frame (m <= 48).
+  // Precompute the color of each nonzero residue 1..m-1 once per frame (m <= 128).
   const denom = Math.max(1, m - 1);
   const colorOf = new Array<string>(m);
   for (let r = 1; r < m; r++) colorOf[r] = cellColor(colorMode, r, denom, colors);

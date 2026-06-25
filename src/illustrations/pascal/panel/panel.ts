@@ -21,7 +21,14 @@ function sectionLabel(text: string): HTMLElement {
   return el("div", { className: "cb-section" }, [el("span", { className: "ds-label" }, [text])]);
 }
 
-export function mountPanel(host: HTMLElement, store: Store<PascalState>): void {
+export function mountPanel(
+  host: HTMLElement,
+  store: Store<PascalState>,
+  // Called when the user restarts the reveal from the top (the "Replay" button at
+  // the end). Lets the host drop any manual zoom/pan so replay re-runs the initial
+  // auto-fit "zoom in and zoom out as it reveals" animation.
+  onRestart: () => void = () => {},
+): void {
   let scrubEl: HTMLInputElement | null = null;
   let playBtn: HTMLButtonElement | null = null;
   let lastStructKey = "";
@@ -54,8 +61,10 @@ export function mountPanel(host: HTMLElement, store: Store<PascalState>): void {
       onClick: () => {
         const st = store.get();
         const atEnd = st.rows > 0 && st.frame >= st.rows;
-        if (atEnd && !st.playing) store.set({ frame: 0, playing: true });
-        else store.set({ playing: !st.playing });
+        if (atEnd && !st.playing) {
+          onRestart(); // re-run the auto-fit reveal, not the user's manual zoom
+          store.set({ frame: 0, playing: true });
+        } else store.set({ playing: !st.playing });
       },
     });
     const stepBtn = mButton("Step", {
@@ -87,7 +96,7 @@ export function mountPanel(host: HTMLElement, store: Store<PascalState>): void {
     const mValue = el("span", { className: "pa-readout" }, [`m = ${s.m}`]);
     const mSliderEl = mSlider({
       min: 2,
-      max: 48,
+      max: 128,
       value: s.m,
       onInput: (v) => {
         mValue.textContent = `m = ${v}`;
@@ -108,7 +117,13 @@ export function mountPanel(host: HTMLElement, store: Store<PascalState>): void {
       min: 1,
       max: MAX_ROWS,
       step: rowsStep,
-      onChange: (v) => store.set({ rows: v, frame: Math.min(store.get().frame, v) }),
+      onChange: (v) => {
+        const st = store.get();
+        // A timeline parked at the end follows to the new end; otherwise the
+        // reveal stays put (just clamped so frame never exceeds the new depth).
+        const atEnd = st.frame >= st.rows;
+        store.set({ rows: v, frame: atEnd ? v : Math.min(st.frame, v) });
+      },
     });
 
     // 6. Color mode (residue numbers auto-fade in at high zoom — no toggle)

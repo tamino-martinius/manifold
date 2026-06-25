@@ -39,6 +39,8 @@ export function readThemeColors(): PascalColors {
     number: "#ffffff",
     ramps: {
       spectral: pal("--pal-spectral"),
+      odd: pal("--pal-ember"), // warm — the odd (Sierpinski-filled) residues
+      even: pal("--pal-ice"), // cool — the nonzero even residues
       prime: pal("--pal-ice"),
       nonPrime: pal("--pal-ember"),
       perfect: pal("--pal-phosphor"),

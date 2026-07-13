@@ -105,22 +105,25 @@ describe("resolveMove", () => {
     expect(b.has(cellKey(0, 0))).toBe(false); // unchanged
   });
 
-  it("allows a move with no own liberties WHEN it captures", () => {
-    // Classic: white would have 0 liberties but the placement captures a black stone.
-    // Black stone at (0,0) in atari (only liberty is (0,-1)); white plays (0,-1):
-    //   white's own neighbours are (0,0)=black,(1,-1),(−1,-1),(0,-2). Make those white-hostile
-    //   so white has no empty liberty EXCEPT via capturing black.
+  it("allows an otherwise-suicidal move BECAUSE it captures (capture resolved first)", () => {
+    // White plays (0,0) with all four neighbours black, so its lone stone has
+    // zero liberties on its own. The black stone at (1,0) is in atari (its only
+    // liberty is (0,0)), so the move captures it and (0,0) gains that liberty.
+    // The other three black stones keep outside liberties, so they survive and
+    // are NOT captured. A suicide-before-capture implementation would wrongly
+    // reject this move — that is the ordering this test locks down.
     const b = boardOf([
-      [0, 0, 0], // black in atari
-      [1, 0, 1],
-      [-1, 0, 1],
-      [0, 1, 1],
+      [1, 0, 0], // black in atari — the only stone captured
+      [-1, 0, 0],
+      [0, 1, 0],
+      [0, -1, 0],
+      [2, 0, 1],
+      [1, 1, 1],
       [1, -1, 1],
-      [-1, -1, 1],
-      [0, -2, 1],
     ]);
-    const r = resolveMove(b, 0, -1, 1);
+    const r = resolveMove(b, 0, 0, 1);
     expect(r.legal).toBe(true);
-    expect(r.captured).toEqual([cellKey(0, 0)]);
+    expect(r.captured).toEqual([cellKey(1, 0)]);
+    expect(b.has(cellKey(1, 0))).toBe(true); // resolveMove must not mutate
   });
 });

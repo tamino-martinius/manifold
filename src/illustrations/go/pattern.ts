@@ -6,10 +6,23 @@ export const GO_COLORS = {
   red: "#cf2f2a",
   blue: "#2f6fdb",
   green: "#2f9e57",
-  amber: "#d98a2b",
 } as const;
 
-export const GO_PALETTE: string[] = Object.values(GO_COLORS);
+// Fixed 12-color palette (theme-independent), all legible on the goban brown.
+export const GO_PALETTE: string[] = [
+  "#171717", // black
+  "#f4efe4", // white
+  "#cf2f2a", // red
+  "#2f6fdb", // blue
+  "#2f9e57", // green
+  "#e2701e", // orange
+  "#7a3fc4", // purple
+  "#0f9b8e", // teal
+  "#e0509e", // pink
+  "#37b6e6", // sky
+  "#59657a", // slate
+  "#8f2f4f", // wine
+];
 
 export const DEFAULT_PATTERN: string[] = [GO_COLORS.black, GO_COLORS.white];
 
@@ -28,4 +41,10 @@ export function playerColors(pattern: string[]): string[] {
   const seen: string[] = [];
   for (const c of pattern) if (!seen.includes(c)) seen.push(c);
   return seen;
+}
+
+/** Color for a newly-appended slot: the first palette color not already used,
+ *  or the first palette color if every one is present. */
+export function nextAddColor(pattern: string[]): string {
+  return GO_PALETTE.find((c) => !pattern.includes(c)) ?? GO_PALETTE[0];
 }

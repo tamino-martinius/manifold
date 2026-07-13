@@ -1,0 +1,63 @@
+/* Turn-pattern editor chips (studio panel). Reuses chessboard cb-* chrome. */
+.go-pattern {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.go-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.go-chip-swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border, #3a3a3a);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.go-chip-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.go-chip-swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+.go-chip-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-flex;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--surface-raised, #222);
+  color: var(--text-muted, #999);
+  cursor: pointer;
+  line-height: 0;
+}
+.go-chip-remove:hover {
+  color: var(--danger, #e10600);
+}
+.go-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.go-readout {
+  display: flex;
+  gap: 14px;
+}
+.go-readout-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.go-readout-value {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}

@@ -64,3 +64,45 @@
   font-family: var(--font-mono, ui-monospace, monospace);
   font-variant-numeric: tabular-nums;
 }
+/* Turn-slot chip as a color button + drag-and-drop reorder. */
+.go-chip {
+  cursor: grab;
+}
+.go-chip.go-chip--drop {
+  outline: 2px dashed var(--accent, #e10600);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+.go-chip-swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border, #3a3a3a);
+  border-radius: 50%;
+  cursor: pointer;
+}
+/* Swatch popover (12-color grid). */
+.go-swatch-pop {
+  position: fixed;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border, #3a3a3a);
+  border-radius: 8px;
+  background: var(--surface-raised, #222);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.go-swatch {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border, #3a3a3a);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.go-swatch.is-active {
+  outline: 2px solid var(--accent, #e10600);
+  outline-offset: 1px;
+}

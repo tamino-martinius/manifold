@@ -1,10 +1,16 @@
-import { pickDistinctColor } from "../../../shared/color";
 import { clear, el } from "../../../shared/dom";
 import { groupThousands } from "../../../shared/format";
 import { icon } from "../../../shared/icons";
 import type { Store } from "../../../shared/store";
-import { field, mButton, mIconButton, mNumber, mSlider } from "../../chessboard/panel/controls";
-import { GO_PALETTE, PATTERN_PRESETS } from "../pattern";
+import {
+  field,
+  mButton,
+  mIconButton,
+  mNumber,
+  mSegmented,
+  mSlider,
+} from "../../chessboard/panel/controls";
+import { GO_PALETTE, PATTERN_PRESETS, nextAddColor } from "../pattern";
 import type { GoState } from "../state";
 
 const MAX_MOVES_CAP = 1_000_000;
@@ -30,6 +36,48 @@ function sectionLabel(text: string): HTMLElement {
 function setPattern(store: Store<GoState>, pattern: string[], onChange: () => void): void {
   store.set({ pattern });
   onChange();
+}
+
+// A small fixed-positioned 12-swatch popover anchored under `anchor`. Closes on
+// outside-click, scroll, or pick. Mirrors the chessboard dropdown pattern.
+function openSwatchPopover(
+  anchor: HTMLElement,
+  current: string,
+  onPick: (color: string) => void,
+): void {
+  const pop = el("div", { className: "go-swatch-pop" });
+  const close = (): void => {
+    pop.remove();
+    document.removeEventListener("mousedown", onDoc);
+    window.removeEventListener("scroll", onScroll, true);
+    window.removeEventListener("resize", close);
+  };
+  const onDoc = (e: MouseEvent): void => {
+    if (!pop.contains(e.target as Node) && e.target !== anchor) close();
+  };
+  const onScroll = (): void => close();
+
+  for (const color of GO_PALETTE) {
+    const sw = el("button", {
+      type: "button",
+      className: `go-swatch${color === current ? " is-active" : ""}`,
+      style: `background:${color}`,
+      title: color,
+      "aria-label": color,
+    });
+    sw.addEventListener("click", () => {
+      close();
+      onPick(color);
+    });
+    pop.append(sw);
+  }
+  document.body.append(pop);
+  const r = anchor.getBoundingClientRect();
+  pop.style.top = `${Math.round(r.bottom + 6)}px`;
+  pop.style.left = `${Math.round(Math.min(r.left, window.innerWidth - pop.offsetWidth - 8))}px`;
+  document.addEventListener("mousedown", onDoc);
+  window.addEventListener("scroll", onScroll, true);
+  window.addEventListener("resize", close);
 }
 
 export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange: () => void): void {
@@ -103,21 +151,58 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
         onChange();
       },
     });
+    const territoryToggle = mSegmented(
+      [
+        { value: "off", label: "Off" },
+        { value: "on", label: "On" },
+      ],
+      s.showTerritory ? "on" : "off",
+      (v) => store.set({ showTerritory: v === "on" }),
+    );
 
-    // Turn-pattern editor: one colored chip per slot.
+    // Turn-pattern editor: one color-button chip per slot; click opens a swatch
+    // popover, and chips reorder by drag and drop.
+    let dragSrc = -1;
     const patternRow = el("div", { className: "go-pattern" });
+    const movePattern = (from: number, to: number): void => {
+      if (from === to || from < 0 || to < 0) return;
+      const next = store.get().pattern.slice();
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      setPattern(store, next, onChange);
+    };
     s.pattern.forEach((color, i) => {
-      const swatch = el("input", {
-        type: "color",
+      const swatch = el("button", {
+        type: "button",
         className: "go-chip-swatch",
-        value: color,
-        onInput: (e: Event) => {
-          const next = store.get().pattern.slice();
-          next[i] = (e.target as HTMLInputElement).value;
-          setPattern(store, next, onChange);
-        },
+        style: `background:${color}`,
+        title: "Change color",
+        "aria-label": "Change color",
       });
-      const chip = el("div", { className: "go-chip" }, [swatch]);
+      swatch.addEventListener("click", () =>
+        openSwatchPopover(swatch, store.get().pattern[i], (picked) => {
+          const next = store.get().pattern.slice();
+          next[i] = picked;
+          setPattern(store, next, onChange);
+        }),
+      );
+      // `draggable: "true"` (string, not boolean) — the boolean path of `el` would
+      // emit `draggable=""`, an invalid enumerated value that leaves a div undraggable.
+      const chip = el("div", { className: "go-chip", draggable: "true" }, [swatch]);
+      chip.addEventListener("dragstart", (e) => {
+        dragSrc = i;
+        (e as DragEvent).dataTransfer?.setData("text/plain", String(i));
+      });
+      chip.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        chip.classList.add("go-chip--drop");
+      });
+      chip.addEventListener("dragleave", () => chip.classList.remove("go-chip--drop"));
+      chip.addEventListener("drop", (e) => {
+        e.preventDefault();
+        chip.classList.remove("go-chip--drop");
+        movePattern(dragSrc, i);
+      });
       if (s.pattern.length > 1) {
         const remove = el(
           "button",
@@ -142,8 +227,7 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
       title: "Add turn",
       onClick: () => {
         const cur = store.get().pattern;
-        const color = pickDistinctColor(cur, GO_PALETTE);
-        setPattern(store, [...cur, color], onChange);
+        setPattern(store, [...cur, nextAddColor(cur)], onChange);
       },
     });
     patternRow.append(addChip);
@@ -174,6 +258,7 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
       field("Zoom", scrubEl),
       field("Speed", speed),
       field("Max moves", maxMoves),
+      field("Captured area", territoryToggle),
       readout,
       sectionLabel("Turn order"),
       field("Pattern", patternRow),

@@ -11,8 +11,11 @@ import {
   mSlider,
 } from "../../chessboard/panel/controls";
 import { createCounter } from "../count-to";
+import { createDistChart } from "../dist-chart";
+import { type Distribution, colorDistribution } from "../distribution";
 import { GO_PALETTE, PATTERN_PRESETS, nextAddColor, playerColors } from "../pattern";
 import type { GoState } from "../state";
+import type { GoData } from "../types";
 
 const MAX_MOVES_CAP = 1_000_000;
 
@@ -110,6 +113,10 @@ export function mountGoPanel(
   let lastStructKey = "";
   let counters: { hex: string; counter: ReturnType<typeof createCounter> }[] = [];
   const heldTargets = new Map<string, number>();
+  const SAMPLES = 256;
+  let chart: ReturnType<typeof createDistChart> | null = null;
+  let chartData: GoData | null = null; // memo key
+  let chartDist: Distribution | null = null;
 
   const structKey = (s: GoState): string =>
     JSON.stringify({ pattern: s.pattern, maxMoves: s.maxMoves });
@@ -128,6 +135,15 @@ export function mountGoPanel(
     if (moveOut) moveOut.textContent = groupThousands(t);
     if (stoneOut) stoneOut.textContent = groupThousands(t - caps);
     if (capOut) capOut.textContent = groupThousands(caps);
+    if (chart) {
+      if (s.data !== chartData) {
+        chartData = s.data;
+        chartDist = colorDistribution(s.data, SAMPLES);
+      }
+      const frac =
+        s.data.count > 0 ? Math.min(Math.floor(s.frame), s.data.count) / s.data.count : 0;
+      if (chartDist) chart.draw(chartDist, s.data.colors, s.chartMode, frac);
+    }
   };
 
   const renderAll = (): void => {
@@ -287,6 +303,18 @@ export function mountGoPanel(
       ),
     );
 
+    const modeToggle = mSegmented<"stacked" | "lines">(
+      [
+        { value: "stacked", label: "Stacked" },
+        { value: "lines", label: "Lines" },
+      ],
+      s.chartMode,
+      (v) => store.set({ chartMode: v }),
+    );
+    const chartCanvas = el("canvas", { className: "go-dist-canvas" }) as HTMLCanvasElement;
+    chart = createDistChart(chartCanvas);
+    chartData = null; // force a distribution recompute on the next syncLive
+
     host.append(
       sectionLabel("Parameters"),
       el("div", { className: "cb-playback" }, [playBtn, stepBtn]),
@@ -297,6 +325,9 @@ export function mountGoPanel(
       readout,
       sectionLabel("Stones by color"),
       countRow,
+      sectionLabel("Distribution"),
+      field("Mode", modeToggle),
+      chartCanvas,
       sectionLabel("Turn order"),
       field("Pattern", patternRow),
       field("Presets", presets),

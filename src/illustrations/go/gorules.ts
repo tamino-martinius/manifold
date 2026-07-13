@@ -63,6 +63,39 @@ export function groupInfo(
 }
 
 /**
+ * Flood-fill the same-color group containing (x, y), returning its stones only
+ * if the group has ZERO liberties (i.e. it is captured). Returns `null` the
+ * moment any liberty is found — so a live group costs only the walk to its
+ * nearest empty point, not a full traversal. A fully-traversed (captured) group
+ * is bounded by the stones being removed, keeping the whole fill near-linear.
+ *
+ * The traversal order (stack-based DFS, NEIGHBORS order) matches {@link groupInfo}
+ * so a captured group's stone list is identical to the full-scan result.
+ */
+function capturedGroup(board: Board, x: number, y: number, color: number): number[] | null {
+  const start = cellKey(x, y);
+  const stones: number[] = [];
+  const seen = new Set<number>([start]);
+  const stack: [number, number][] = [[x, y]];
+  while (stack.length > 0) {
+    const [cx, cy] = stack.pop() as [number, number];
+    stones.push(cellKey(cx, cy));
+    for (const [dx, dy] of NEIGHBORS) {
+      const nx = cx + dx;
+      const ny = cy + dy;
+      const nk = cellKey(nx, ny);
+      const nc = board.get(nk);
+      if (nc === undefined) return null; // empty neighbour = liberty → not captured
+      if (nc === color && !seen.has(nk)) {
+        seen.add(nk);
+        stack.push([nx, ny]);
+      }
+    }
+  }
+  return stones;
+}
+
+/**
  * Decide whether `color` may play (x, y) on `board` and which enemy stones the
  * move captures. Captures are resolved first (standard Go), then suicide is
  * checked. Leaves `board` unchanged on return.
@@ -82,8 +115,8 @@ export function resolveMove(
     const nk = cellKey(nx, ny);
     const nc = board.get(nk);
     if (nc !== undefined && nc !== color && !captured.has(nk)) {
-      const g = groupInfo(board, nx, ny, nc);
-      if (g.liberties === 0) for (const s of g.stones) captured.add(s);
+      const g = capturedGroup(board, nx, ny, nc);
+      if (g !== null) for (const s of g) captured.add(s);
     }
   }
   let legal: boolean;
@@ -92,7 +125,8 @@ export function resolveMove(
     legal = true;
     capturedArr = [...captured];
   } else {
-    legal = groupInfo(board, x, y, color).liberties > 0;
+    // No capture: legal iff the placed stone's own group has a liberty.
+    legal = capturedGroup(board, x, y, color) === null;
     capturedArr = [];
   }
   board.delete(key); // restore — net zero mutation

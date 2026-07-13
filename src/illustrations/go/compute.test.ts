@@ -71,3 +71,58 @@ describe("computeGoMoves", () => {
     expect(seen[seen.length - 1]).toBe(5000);
   });
 });
+
+// FNV-1a over a typed array — a compact fingerprint of the full delta stream.
+function checksum(a: ArrayLike<number>): string {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < a.length; i++) {
+    h ^= a[i] & 0xffffffff;
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h.toString(16);
+}
+
+// Golden fingerprints of the exact delta stream, captured from the reviewed
+// baseline. They guard against any change silently altering which cells get
+// played/captured (e.g. a future perf tweak to the Go-rules flood-fill). If a
+// deliberate rule change lands, recompute and update these.
+describe("computeGoMoves golden output", () => {
+  const cases: { name: string; pattern: string[]; n: number; sig: string }[] = [
+    {
+      name: "black/white × 2000",
+      pattern: [BLACK, WHITE],
+      n: 2000,
+      sig: "2000 7cfa8c12 8394eaaf cfb8dfa5 dcd7ab77 23802684 a273da3a 7dc4aa52 f3726831 aa8c4eb1",
+    },
+    {
+      name: "black/white × 20000",
+      pattern: [BLACK, WHITE],
+      n: 20000,
+      sig: "20000 4471ef37 9047287f 29fda885 bbca505c f2c79c07 c010aee0 e23afa35 6013e6af 1a3615dd",
+    },
+    {
+      name: "black/white/red × 1500",
+      pattern: [BLACK, WHITE, "#cf2f2a"],
+      n: 1500,
+      sig: "1500 2b832ea3 2c6d729d 692d0361 b448aaed 934bffa9 5826053 3898f836 95466fed 2766e1a2",
+    },
+  ];
+  for (const c of cases) {
+    it(`is stable for ${c.name}`, () => {
+      const d = computeGoMoves(c.pattern, c.n);
+      const sig = [
+        d.count,
+        checksum(d.placedX),
+        checksum(d.placedY),
+        checksum(d.placedColor),
+        checksum(d.capOffset),
+        checksum(d.capX),
+        checksum(d.capY),
+        checksum(d.capColor),
+        checksum(d.halfX),
+        checksum(d.halfY),
+      ].join(" ");
+      expect(sig).toBe(c.sig);
+    });
+  }
+});

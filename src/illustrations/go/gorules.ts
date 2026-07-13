@@ -99,6 +99,9 @@ function capturedGroup(board: Board, x: number, y: number, color: number): numbe
  * Decide whether `color` may play (x, y) on `board` and which enemy stones the
  * move captures. Captures are resolved first (standard Go), then suicide is
  * checked. Leaves `board` unchanged on return.
+ *
+ * Precondition: (x, y) is empty. The caller (the spiral fill) only ever proposes
+ * empty cells; a non-empty cell would be silently overwritten and then deleted.
  */
 export function resolveMove(
   board: Board,

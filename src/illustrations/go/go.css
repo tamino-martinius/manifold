@@ -34,6 +34,9 @@
   right: -6px;
   display: inline-flex;
   padding: 1px;
+  border: none;
+  appearance: none;
+  font: inherit;
   border-radius: 50%;
   background: var(--surface-raised, #222);
   color: var(--text-muted, #999);

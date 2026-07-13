@@ -1,4 +1,4 @@
-import { coordToIndex, spiralCoordAt } from "../chessboard/spiral";
+import { spiralCoordAt } from "../chessboard/spiral";
 import { type Board, cellKey, keyX, keyY, resolveMove } from "./gorules";
 import type { GoData } from "./types";
 
@@ -53,6 +53,11 @@ export function computeGoMoves(
   });
 
   const board: Board = new Map();
+  // Spiral index of the stone currently occupying each cell. Lets a capture
+  // reopen its cell at the exact spiral index it was placed at, without the
+  // string-keyed reverse lookup `coordToIndex` would build (which spiral.ts
+  // documents as "placement never pays for").
+  const cellIndex = new Map<number, number>();
   // Empty cells below `frontier` (all cells >= frontier are pristine/empty), kept
   // sorted ascending so the lowest legal cell is found by scanning holes then the
   // frontier. Captures reopen low cells → inserted here.
@@ -124,6 +129,7 @@ export function computeGoMoves(
     // Commit.
     const key = cellKey(cx, cy);
     board.set(key, color);
+    cellIndex.set(key, chosenIndex);
     hash ^= zob(key, color);
     let capN = 0;
     for (const ck of captured) {
@@ -134,7 +140,8 @@ export function computeGoMoves(
       capYs.push(keyY(ck));
       capColors.push(cc);
       capN++;
-      const ci = coordToIndex(keyX(ck), keyY(ck)) - 1; // reopened low cell → hole
+      const ci = cellIndex.get(ck) as number; // reopened low cell → hole
+      cellIndex.delete(ck);
       insertHole(ci);
     }
     seen.add(hash);

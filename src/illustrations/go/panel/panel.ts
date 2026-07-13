@@ -119,9 +119,16 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
       });
       const chip = el("div", { className: "go-chip" }, [swatch]);
       if (s.pattern.length > 1) {
-        const remove = el("span", { className: "go-chip-remove", title: "Remove turn" }, [
-          icon("x", 12),
-        ]);
+        const remove = el(
+          "button",
+          {
+            type: "button",
+            className: "go-chip-remove",
+            title: "Remove turn",
+            "aria-label": "Remove turn",
+          },
+          [icon("x", 12)],
+        );
         remove.addEventListener("click", () => {
           const next = store.get().pattern.slice();
           next.splice(i, 1);

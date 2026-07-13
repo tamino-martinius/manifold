@@ -10,7 +10,8 @@ import {
   mSegmented,
   mSlider,
 } from "../../chessboard/panel/controls";
-import { GO_PALETTE, PATTERN_PRESETS, nextAddColor } from "../pattern";
+import { createCounter } from "../count-to";
+import { GO_PALETTE, PATTERN_PRESETS, nextAddColor, playerColors } from "../pattern";
 import type { GoState } from "../state";
 
 const MAX_MOVES_CAP = 1_000_000;
@@ -96,13 +97,19 @@ function openSwatchPopover(
   activePopoverAnchor = anchor;
 }
 
-export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange: () => void): void {
+export function mountGoPanel(
+  host: HTMLElement,
+  store: Store<GoState>,
+  onChange: () => void,
+): { tickCounts(byHex: Map<string, number>, dt: number): void } {
   let scrubEl: HTMLInputElement | null = null;
   let playBtn: HTMLButtonElement | null = null;
   let moveOut: HTMLElement | null = null;
   let stoneOut: HTMLElement | null = null;
   let capOut: HTMLElement | null = null;
   let lastStructKey = "";
+  let counters: { hex: string; counter: ReturnType<typeof createCounter> }[] = [];
+  const heldTargets = new Map<string, number>();
 
   const structKey = (s: GoState): string =>
     JSON.stringify({ pattern: s.pattern, maxMoves: s.maxMoves });
@@ -268,6 +275,18 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
       }),
     ]);
 
+    counters = playerColors(s.pattern).map((hex) => ({ hex, counter: createCounter() }));
+    const countRow = el(
+      "div",
+      { className: "go-counts" },
+      counters.map(({ hex, counter }) =>
+        el("div", { className: "go-count" }, [
+          el("span", { className: "go-count-swatch", style: `background:${hex}` }),
+          counter.el,
+        ]),
+      ),
+    );
+
     host.append(
       sectionLabel("Parameters"),
       el("div", { className: "cb-playback" }, [playBtn, stepBtn]),
@@ -276,6 +295,8 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
       field("Max moves", maxMoves),
       field("Captured area", territoryToggle),
       readout,
+      sectionLabel("Stones by color"),
+      countRow,
       sectionLabel("Turn order"),
       field("Pattern", patternRow),
       field("Presets", presets),
@@ -290,6 +311,13 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
     else syncLive(s);
   });
   renderAll();
+
+  return {
+    tickCounts(byHex, dt) {
+      for (const [hex, n] of byHex) heldTargets.set(hex, n);
+      for (const { hex, counter } of counters) counter.tick(heldTargets.get(hex) ?? 0, dt);
+    },
+  };
 }
 
 function readoutItem(label: string, bind: (valueEl: HTMLElement) => void): HTMLElement {

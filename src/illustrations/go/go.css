@@ -86,3 +86,26 @@
   outline: 2px solid var(--accent, #e10600);
   outline-offset: 1px;
 }
+
+/* Live per-color stone counts. */
+.go-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.go-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.go-count-swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border, #3a3a3a);
+  border-radius: 50%;
+  flex: none;
+}
+.go-count-value {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}

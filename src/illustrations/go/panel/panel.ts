@@ -17,14 +17,16 @@ import { GO_PALETTE, PATTERN_PRESETS, nextAddColor, playerColors } from "../patt
 import type { GoState } from "../state";
 import type { GoData } from "../types";
 
-const MAX_MOVES_CAP = 1_000_000;
+const MAX_MOVES_CAP = 10_000_000;
 
 function maxMovesStep(value: number): number {
   if (value < 2000) return 500;
   if (value < 5000) return 1000;
   if (value < 20000) return 2000;
   if (value < 50000) return 5000;
-  return 10000;
+  if (value < 200000) return 10000;
+  if (value < 1000000) return 50000;
+  return 500000;
 }
 
 function setPlayContent(btn: HTMLButtonElement, playing: boolean, atEnd: boolean): void {
@@ -142,7 +144,7 @@ export function mountGoPanel(
       }
       const frac =
         s.data.count > 0 ? Math.min(Math.floor(s.frame), s.data.count) / s.data.count : 0;
-      if (chartDist) chart.draw(chartDist, s.data.colors, s.chartMode, frac);
+      if (chartDist) chart.draw(chartDist, s.data.colors, s.chartMode, s.chartScale, frac);
     }
   };
 
@@ -311,6 +313,14 @@ export function mountGoPanel(
       s.chartMode,
       (v) => store.set({ chartMode: v }),
     );
+    const scaleToggle = mSegmented<"percentage" | "absolute">(
+      [
+        { value: "percentage", label: "Percent" },
+        { value: "absolute", label: "Absolute" },
+      ],
+      s.chartScale,
+      (v) => store.set({ chartScale: v }),
+    );
     const chartCanvas = el("canvas", { className: "go-dist-canvas" }) as HTMLCanvasElement;
     chart = createDistChart(chartCanvas);
     chartData = null; // force a distribution recompute on the next syncLive
@@ -327,6 +337,7 @@ export function mountGoPanel(
       countRow,
       sectionLabel("Distribution"),
       field("Mode", modeToggle),
+      field("Scale", scaleToggle),
       chartCanvas,
       sectionLabel("Turn order"),
       field("Pattern", patternRow),

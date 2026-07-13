@@ -8,22 +8,26 @@ const SEPARATOR = "rgba(255, 255, 255, 0.5)";
 const GUIDE = "rgba(255, 255, 255, 0.1)";
 
 /**
- * Draws the color distribution as a 100%-stacked area ("stacked") or overlaid
- * per-color share lines ("lines"), full-width across the turns, with a vertical
- * playhead at `frameFraction` (0..1). Colors are the player colors, in order.
+ * Draws the color distribution as a stacked area ("stacked") or overlaid per-color
+ * lines ("lines"), full-width across the turns, with a vertical playhead at
+ * `frameFraction` (0..1). `scale` picks the y-axis: "percentage" normalizes each
+ * column to its own live-stone total (every slice fills the height — composition);
+ * "absolute" normalizes everything to the peak total live-stone count over the run
+ * (columns grow with the board — magnitude). Colors are the player colors, in order.
  */
 export function createDistChart(canvas: HTMLCanvasElement): {
   draw(
     dist: Distribution,
     colors: string[],
     mode: "stacked" | "lines",
+    scale: "percentage" | "absolute",
     frameFraction: number,
   ): void;
 } {
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
   return {
-    draw(dist, colors, mode, frameFraction) {
+    draw(dist, colors, mode, scale, frameFraction) {
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.clientWidth || 240;
       const h = canvas.clientHeight || 120;
@@ -51,21 +55,28 @@ export function createDistChart(canvas: HTMLCanvasElement): {
 
       if (C > 0 && n > 0) {
         const xAt = (i: number): number => (n <= 1 ? w : (i / (n - 1)) * w);
-        // cum[i][j] = cumulative share of colors [0, j) at sample i; cum[i][C] = 1
-        // (or 0 for an all-empty row). Precompute once.
+        // cum[i*(C+1)+j] = cumulative raw live count of colors [0, j) at sample i;
+        // cum[..C] is that sample's total. Track the peak total for absolute scaling.
         const cum = new Float64Array(n * (C + 1));
+        let maxTotal = 0;
         for (let i = 0; i < n; i++) {
-          let total = 0;
-          for (let c = 0; c < C; c++) total += dist.counts[i * C + c];
-          let acc = 0;
           const base = i * (C + 1);
+          let acc = 0;
           cum[base] = 0;
           for (let c = 0; c < C; c++) {
-            acc += total > 0 ? dist.counts[i * C + c] / total : 0;
+            acc += dist.counts[i * C + c];
             cum[base + c + 1] = acc;
           }
+          if (acc > maxTotal) maxTotal = acc;
         }
-        const yTop = (i: number, j: number): number => h - cum[i * (C + 1) + j] * h;
+        // Denominator per column: its own total (percentage → full height) or the
+        // global peak (absolute → columns scale with the board). Never 0 — when a
+        // column total is 0 its numerators are 0 too, so the result is still 0.
+        const denomAt = (i: number): number => {
+          const d = scale === "absolute" ? maxTotal : cum[i * (C + 1) + C];
+          return d > 0 ? d : 1;
+        };
+        const yTop = (i: number, j: number): number => h - (cum[i * (C + 1) + j] / denomAt(i)) * h;
 
         if (mode === "stacked") {
           for (let c = 0; c < C; c++) {
@@ -96,13 +107,15 @@ export function createDistChart(canvas: HTMLCanvasElement): {
           }
         } else {
           for (let c = 0; c < C; c++) {
-            const share = (i: number): number =>
-              h - (cum[i * (C + 1) + c + 1] - cum[i * (C + 1) + c]) * h;
+            const value = (i: number): number => {
+              const base = i * (C + 1);
+              return h - ((cum[base + c + 1] - cum[base + c]) / denomAt(i)) * h;
+            };
             const trace = (): void => {
               ctx.beginPath();
               for (let i = 0; i < n; i++) {
                 const x = xAt(i);
-                const y = share(i);
+                const y = value(i);
                 if (i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
               }

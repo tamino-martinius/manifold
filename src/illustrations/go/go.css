@@ -44,9 +44,13 @@
 }
 .go-readout {
   display: flex;
-  gap: 14px;
+  gap: 8px;
 }
 .go-readout-item {
+  /* Fixed thirds: each part holds 1/3 of the width so Move/Stones/Captures never
+     shift position as their numbers grow (up to the 10,000,000 cap). */
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -54,6 +58,7 @@
 .go-readout-value {
   font-family: var(--font-mono, ui-monospace, monospace);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 /* Drag-and-drop reorder highlight. */
 .go-chip.go-chip--drop {

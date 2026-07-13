@@ -14,6 +14,8 @@ export type GoState = {
   showTerritory: boolean;
   /** Distribution-plot mode. Live redraw, never recomputes. */
   chartMode: "stacked" | "lines";
+  /** Distribution-plot y-axis: share (%) vs raw live-stone counts. Live redraw. */
+  chartScale: "percentage" | "absolute";
   data: GoData;
   loading: boolean;
   progress: number;
@@ -42,6 +44,7 @@ export function createGoStore(): Store<GoState> {
     speed: 30,
     showTerritory: false,
     chartMode: "stacked",
+    chartScale: "percentage",
     data: EMPTY_GO_DATA,
     loading: true,
     progress: 0,

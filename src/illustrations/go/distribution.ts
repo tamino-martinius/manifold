@@ -18,7 +18,9 @@ export type Distribution = {
  */
 export function colorDistribution(data: GoData, samples: number): Distribution {
   const C = data.colors.length;
-  const n = Math.max(1, Math.min(samples, data.count || 1));
+  // Floor `samples` so a fractional request (e.g. a device-pixel width) can't
+  // produce a non-integer array length / offset.
+  const n = Math.max(1, Math.min(Math.floor(samples), data.count || 1));
   const turns = new Uint32Array(n);
   const counts = new Uint32Array(n * C);
   if (data.count === 0 || C === 0) return { turns, counts, colorCount: C, samples: n };

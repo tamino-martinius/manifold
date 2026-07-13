@@ -110,7 +110,16 @@ describe("registry", () => {
     expect(typeof ant?.mountPreview).toBe("function");
   });
 
-  it("lists the langtons-ant illustration last", () => {
-    expect(illustrations[illustrations.length - 1]?.id).toBe("langtons-ant");
+  it("includes the go illustration with required fields", () => {
+    const go = illustrations.find((i) => i.id === "go");
+    expect(go).toBeDefined();
+    expect(go?.route).toBe("go/");
+    expect(go?.title.length).toBeGreaterThan(0);
+    expect(go?.description.length).toBeGreaterThan(0);
+    expect(typeof go?.mountPreview).toBe("function");
+  });
+
+  it("lists the go illustration last", () => {
+    expect(illustrations[illustrations.length - 1]?.id).toBe("go");
   });
 });

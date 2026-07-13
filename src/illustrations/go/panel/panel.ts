@@ -38,21 +38,35 @@ function setPattern(store: Store<GoState>, pattern: string[], onChange: () => vo
   onChange();
 }
 
-// A small fixed-positioned 12-swatch popover anchored under `anchor`. Closes on
-// outside-click, scroll, or pick. Mirrors the chessboard dropdown pattern.
+// A single fixed-positioned 12-swatch popover. Clicking the same anchor toggles
+// it closed; opening another closes the previous. Also closes on outside
+// mousedown, scroll, resize, or pick. One panel per page, so the active-popover
+// state is a module-level singleton.
+let closeActivePopover: (() => void) | null = null;
+let activePopoverAnchor: HTMLElement | null = null;
+
 function openSwatchPopover(
   anchor: HTMLElement,
   current: string,
   onPick: (color: string) => void,
 ): void {
+  const wasAnchor = activePopoverAnchor;
+  closeActivePopover?.(); // close any open popover first
+  if (wasAnchor === anchor) return; // same anchor was open → treat this click as a toggle-close
+
   const pop = el("div", { className: "go-swatch-pop" });
   const close = (): void => {
     pop.remove();
     document.removeEventListener("mousedown", onDoc);
     window.removeEventListener("scroll", onScroll, true);
     window.removeEventListener("resize", close);
+    if (closeActivePopover === close) {
+      closeActivePopover = null;
+      activePopoverAnchor = null;
+    }
   };
   const onDoc = (e: MouseEvent): void => {
+    // Ignore mousedown on the anchor itself — its click runs the toggle above.
     if (!pop.contains(e.target as Node) && e.target !== anchor) close();
   };
   const onScroll = (): void => close();
@@ -78,6 +92,8 @@ function openSwatchPopover(
   document.addEventListener("mousedown", onDoc);
   window.addEventListener("scroll", onScroll, true);
   window.addEventListener("resize", close);
+  closeActivePopover = close;
+  activePopoverAnchor = anchor;
 }
 
 export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange: () => void): void {

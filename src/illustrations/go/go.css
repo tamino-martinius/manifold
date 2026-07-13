@@ -9,6 +9,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+  cursor: grab;
 }
 .go-chip-swatch {
   width: 26px;
@@ -16,17 +17,7 @@
   padding: 0;
   border: 1px solid var(--border, #3a3a3a);
   border-radius: 50%;
-  background: none;
   cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-.go-chip-swatch::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-.go-chip-swatch::-webkit-color-swatch {
-  border: none;
-  border-radius: 50%;
 }
 .go-chip-remove {
   position: absolute;
@@ -64,22 +55,11 @@
   font-family: var(--font-mono, ui-monospace, monospace);
   font-variant-numeric: tabular-nums;
 }
-/* Turn-slot chip as a color button + drag-and-drop reorder. */
-.go-chip {
-  cursor: grab;
-}
+/* Drag-and-drop reorder highlight. */
 .go-chip.go-chip--drop {
   outline: 2px dashed var(--accent, #e10600);
   outline-offset: 2px;
   border-radius: 50%;
-}
-.go-chip-swatch {
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 1px solid var(--border, #3a3a3a);
-  border-radius: 50%;
-  cursor: pointer;
 }
 /* Swatch popover (12-color grid). */
 .go-swatch-pop {

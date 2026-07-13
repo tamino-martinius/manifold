@@ -41,6 +41,9 @@ export function createField(radius: number): Field {
   const stones = new Int32Array(N); // reused group buffer (flat indices)
   const captured = new Int32Array(N); // reused capture output (flat indices)
   const DIRS = [1, -1, SIDE, -SIDE];
+  // Monotonic stamps into `visited`/`capMark`. They advance a few per move, so at
+  // the 1e6 move cap they stay ~2 orders of magnitude below 2^31; if the cap ever
+  // grows past hundreds of millions, guard against Int32Array write truncation.
   let gen = 0;
   let capGen = 0;
 

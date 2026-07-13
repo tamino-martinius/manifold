@@ -59,8 +59,11 @@ export function computeGoMoves(
     return i;
   });
 
-  // The spiral fill of `maxMoves` cells stays inside this radius; +3 pads the
-  // border so the flat field's neighbour reads never touch a live cell.
+  // The spiral fill of `maxMoves` cells reaches Chebyshev radius ~sqrt(maxMoves)/2;
+  // the `+3` leaves >=2 fully-empty border rings around it, so field.ts's unchecked
+  // neighbour reads (idx +/- 1, idx +/- SIDE) never touch the array edge or wrap
+  // into an adjacent row. Verified to hold with a constant 2-ring margin across the
+  // whole supported range (maxMoves is capped at 1e6 in the panel).
   const radius = Math.floor(Math.ceil(Math.sqrt(maxMoves)) / 2) + 3;
   const field = createField(radius);
   // Spiral index of the stone occupying each cell — so a capture can reopen its

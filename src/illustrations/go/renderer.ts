@@ -46,7 +46,9 @@ export function renderGoBoard(
   ctx: CanvasRenderingContext2D,
   cam: Camera,
   board: Board,
+  territory: Board,
   colors: string[],
+  showTerritory: boolean,
   canvasW: number,
   canvasH: number,
 ): void {
@@ -80,18 +82,55 @@ export function renderGoBoard(
   }
 
   const { size, radius } = stoneGeometry(cellPx);
-  const o = size / 2;
   const rounded = radius >= 0.5;
-  const oa = stoneOutlineAlpha(cellPx);
   const off = -cellPx;
   const maxX = canvasW + cellPx;
   const maxY = canvasH + cellPx;
 
-  // One pass over the live board buckets visible stones by color; each color is
-  // then drawn in a single batched path (cheap — visible count is canvas-bounded).
+  // Captured-area territory, faded, under the stones (no outline). Territory
+  // cells are empty, so live stones never overdraw them.
+  if (showTerritory && territory.size > 0) {
+    ctx.globalAlpha = 0.3;
+    drawCells(ctx, cam, territory, colors, size, radius, rounded, off, maxX, maxY, 0);
+    ctx.globalAlpha = 1;
+  }
+
+  drawCells(
+    ctx,
+    cam,
+    board,
+    colors,
+    size,
+    radius,
+    rounded,
+    off,
+    maxX,
+    maxY,
+    stoneOutlineAlpha(cellPx),
+  );
+}
+
+/**
+ * Draw a set of cells (cellKey -> colorIdx), batched by color and culled to the
+ * canvas. `outlineAlpha > 0` strokes a dark ring around each (rounded) shape.
+ */
+function drawCells(
+  ctx: CanvasRenderingContext2D,
+  cam: Camera,
+  cells: Board,
+  colors: string[],
+  size: number,
+  radius: number,
+  rounded: boolean,
+  off: number,
+  maxX: number,
+  maxY: number,
+  outlineAlpha: number,
+): void {
+  const o = size / 2;
   const bx: number[][] = colors.map(() => []);
   const by: number[][] = colors.map(() => []);
-  for (const [key, c] of board) {
+  for (const [key, c] of cells) {
     const sx = keyX(key) * cam.scale + cam.offsetX;
     const sy = -keyY(key) * cam.scale + cam.offsetY;
     if (sx < off || sx > maxX || sy < off || sy > maxY) continue;
@@ -107,9 +146,9 @@ export function renderGoBoard(
       ctx.beginPath();
       for (let i = 0; i < xs.length; i++) ctx.roundRect(xs[i] - o, ys[i] - o, size, size, radius);
       ctx.fill();
-      if (oa > 0.02) {
-        ctx.lineWidth = Math.max(1, cellPx * 0.05);
-        ctx.strokeStyle = `rgba(${OUTLINE_RGB}, ${oa})`;
+      if (outlineAlpha > 0.02) {
+        ctx.lineWidth = Math.max(1, cam.scale * 0.05);
+        ctx.strokeStyle = `rgba(${OUTLINE_RGB}, ${outlineAlpha})`;
         ctx.stroke();
       }
     } else {

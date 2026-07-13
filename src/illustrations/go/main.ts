@@ -146,6 +146,7 @@ function mount(root: HTMLElement): void {
   let drawScale = -1;
   let drawW = -1;
   let drawH = -1;
+  let drawShowTerritory = false;
 
   const render = () => {
     const s = store.get();
@@ -169,18 +170,22 @@ function mount(root: HTMLElement): void {
       count !== drawFrame ||
       Math.abs(displayScale - drawScale) > 1e-3 ||
       canvas.width !== drawW ||
-      canvas.height !== drawH;
+      canvas.height !== drawH ||
+      s.showTerritory !== drawShowTerritory;
     if (!dirty) return;
     drawFrame = count;
     drawScale = displayScale;
     drawW = canvas.width;
     drawH = canvas.height;
+    drawShowTerritory = s.showTerritory;
 
     renderGoBoard(
       ctx,
       { scale: displayScale, offsetX: target.offsetX, offsetY: target.offsetY },
       seeker.board,
+      seeker.territory,
       s.data.colors,
+      s.showTerritory,
       canvas.width,
       canvas.height,
     );

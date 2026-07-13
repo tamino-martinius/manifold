@@ -10,6 +10,8 @@ export type GoState = {
   frame: number;
   playing: boolean;
   speed: number;
+  /** Draw captured-and-empty cells faded (live redraw, never recomputes). */
+  showTerritory: boolean;
   data: GoData;
   loading: boolean;
   progress: number;
@@ -36,6 +38,7 @@ export function createGoStore(): Store<GoState> {
     frame: 0,
     playing: true,
     speed: 30,
+    showTerritory: false,
     data: EMPTY_GO_DATA,
     loading: true,
     progress: 0,

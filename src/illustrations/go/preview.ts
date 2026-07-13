@@ -31,7 +31,9 @@ export function mountGoPreview(canvas: HTMLCanvasElement): () => void {
       ctx,
       { scale: displayScale, offsetX: target.offsetX, offsetY: target.offsetY },
       seeker.board,
+      seeker.territory,
       data.colors,
+      false,
       canvas.width,
       canvas.height,
     );

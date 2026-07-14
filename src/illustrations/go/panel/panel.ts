@@ -129,7 +129,8 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
     const count = s.data.count;
     const frac = count > 0 ? Math.min(Math.floor(s.frame), count) / count : 0;
     const n = chartDist.samples;
-    const hoverFrac = hoverSample !== null && n > 0 ? (n <= 1 ? 0 : hoverSample / (n - 1)) : null;
+    // n<=1 places the sole sample at the right edge (matching the chart's own xAt).
+    const hoverFrac = hoverSample !== null && n > 0 ? (n <= 1 ? 1 : hoverSample / (n - 1)) : null;
     chart.draw(chartDist, s.data.colors, s.chartMode, s.chartScale, frac, hoverFrac);
   };
 

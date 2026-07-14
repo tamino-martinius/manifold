@@ -95,7 +95,8 @@
   opacity: 0;
   transition: opacity 0.1s;
 }
-.go-preset-slot:hover .go-preset-del {
+.go-preset-slot:hover .go-preset-del,
+.go-preset-slot:focus-within .go-preset-del {
   opacity: 1;
 }
 .go-preset-del:hover {

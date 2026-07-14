@@ -132,7 +132,7 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
       grid.append(presetButton(p.pattern, p.name, () => applyPattern(p.pattern)));
     }
     customPresets.forEach((pattern, i) => {
-      const btn = presetButton(pattern, "Custom preset", () => applyPattern(pattern));
+      const btn = presetButton(pattern, `Custom preset ${i + 1}`, () => applyPattern(pattern));
       const del = el(
         "button",
         {

@@ -2,6 +2,7 @@ import { mountChessboardPreview } from "../illustrations/chessboard/preview";
 import { mountCollatzPreview } from "../illustrations/collatz/preview";
 import { mountDragonPreview } from "../illustrations/dragon/preview";
 import { mountFordCirclesPreview } from "../illustrations/ford-circles/preview";
+import { mountGoPreview } from "../illustrations/go/preview";
 import { mountGoldbachPreview } from "../illustrations/goldbach/preview";
 import { mountHilbertPreview } from "../illustrations/hilbert/preview";
 import { mountLangtonsAntPreview } from "../illustrations/langtons-ant/preview";
@@ -115,5 +116,13 @@ export const illustrations: Illustration[] = [
       "One ant, two turn rules, an all-white grid — chaos for ~10,000 steps, then an abrupt periodic highway to infinity.",
     route: "langtons-ant/",
     mountPreview: mountLangtonsAntPreview,
+  },
+  {
+    id: "go",
+    title: "Go Patterns",
+    description:
+      "Stones drop onto the number spiral, each taking the lowest-numbered cell where a legal Go move lands; captures reopen cells, so the board churns into a marbled territory map. Define the repeating turn order (black, white by default) — extra colors add players.",
+    route: "go/",
+    mountPreview: mountGoPreview,
   },
 ];

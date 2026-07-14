@@ -8,6 +8,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         chessboard: resolve(__dirname, "chessboard/index.html"),
+        go: resolve(__dirname, "go/index.html"),
         hilbert: resolve(__dirname, "hilbert/index.html"),
         goldbach: resolve(__dirname, "goldbach/index.html"),
         pascal: resolve(__dirname, "pascal/index.html"),

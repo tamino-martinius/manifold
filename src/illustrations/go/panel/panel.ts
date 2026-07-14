@@ -367,17 +367,57 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
     chartData = null; // force a distribution recompute on the next syncLive
     hoverSample = null;
 
-    // Hover readout: the per-color live counts at the turn under the pointer.
-    chartCanvas.addEventListener("mousemove", (e) => {
-      if (!chartDist || chartDist.samples === 0 || chartDist.colorCount === 0) return;
+    // Hover shows the per-color readout at the turn under the pointer; pressing /
+    // dragging scrubs the timeline (`frame`) to that turn, which drives the board's
+    // zoom-and-reveal — the chart's x-axis is the turn, same as the Zoom slider.
+    // Uses Pointer Events + capture (as in pascal/ford-circles) so a drag keeps
+    // tracking off-canvas and can't leak a listener on a missed pointer-up.
+    let scrubbing = false;
+    const fracAt = (clientX: number): number => {
       const rect = chartCanvas.getBoundingClientRect();
+      return rect.width > 0 ? Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) : 0;
+    };
+    const seek = (clientX: number): void => {
+      const count = store.get().data.count;
+      if (count > 0) store.set({ playing: false, frame: Math.round(fracAt(clientX) * count) });
+    };
+    // Sets the hovered sample + fills the tooltip (does not draw — the caller does).
+    const showReadout = (e: PointerEvent): void => {
+      if (!chartDist || chartDist.colorCount === 0) return;
       const n = chartDist.samples;
-      const f = rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0;
-      hoverSample = Math.max(0, Math.min(n - 1, Math.round(f * (n - 1))));
+      hoverSample = Math.max(0, Math.min(n - 1, Math.round(fracAt(e.clientX) * (n - 1))));
       fillDistTip(tip, chartWrap, chartDist, store.get().data.colors, hoverSample, e);
-      drawChart(store.get());
+    };
+    chartCanvas.addEventListener("pointerdown", (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      scrubbing = true;
+      chartCanvas.setPointerCapture(e.pointerId);
+      showReadout(e);
+      seek(e.clientX); // store.set → syncLive → drawChart (new frame + crosshair)
     });
-    chartCanvas.addEventListener("mouseleave", () => {
+    chartCanvas.addEventListener("pointermove", (e: PointerEvent) => {
+      showReadout(e);
+      if (scrubbing) seek(e.clientX);
+      else drawChart(store.get());
+    });
+    const endScrub = (e: PointerEvent): void => {
+      if (!scrubbing) return;
+      scrubbing = false;
+      if (chartCanvas.hasPointerCapture(e.pointerId))
+        chartCanvas.releasePointerCapture(e.pointerId);
+      const r = chartCanvas.getBoundingClientRect();
+      const inside =
+        e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      if (!inside) {
+        hoverSample = null;
+        tip.style.display = "none";
+        drawChart(store.get());
+      }
+    };
+    chartCanvas.addEventListener("pointerup", endScrub);
+    chartCanvas.addEventListener("pointercancel", endScrub);
+    chartCanvas.addEventListener("pointerleave", () => {
+      if (scrubbing) return; // capture keeps tracking mid-drag
       hoverSample = null;
       tip.style.display = "none";
       drawChart(store.get());

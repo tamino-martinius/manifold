@@ -10,10 +10,9 @@ import {
   mSegmented,
   mSlider,
 } from "../../chessboard/panel/controls";
-import { createCounter } from "../count-to";
 import { createDistChart } from "../dist-chart";
 import { type Distribution, colorDistribution } from "../distribution";
-import { GO_PALETTE, PATTERN_PRESETS, nextAddColor, playerColors } from "../pattern";
+import { GO_PALETTE, PATTERN_PRESETS, nextAddColor } from "../pattern";
 import type { GoState } from "../state";
 import type { GoData } from "../types";
 
@@ -102,26 +101,37 @@ function openSwatchPopover(
   activePopoverAnchor = anchor;
 }
 
-export function mountGoPanel(
-  host: HTMLElement,
-  store: Store<GoState>,
-  onChange: () => void,
-): { tickCounts(byHex: Map<string, number>, dt: number): void } {
+export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange: () => void): void {
   let scrubEl: HTMLInputElement | null = null;
   let playBtn: HTMLButtonElement | null = null;
   let moveOut: HTMLElement | null = null;
   let stoneOut: HTMLElement | null = null;
   let capOut: HTMLElement | null = null;
   let lastStructKey = "";
-  let counters: { hex: string; counter: ReturnType<typeof createCounter> }[] = [];
-  const heldTargets = new Map<string, number>();
   const SAMPLES = 256;
   let chart: ReturnType<typeof createDistChart> | null = null;
   let chartData: GoData | null = null; // memo key
   let chartDist: Distribution | null = null;
+  let hoverSample: number | null = null; // distribution-chart hover: sampled turn under the pointer
 
   const structKey = (s: GoState): string =>
     JSON.stringify({ pattern: s.pattern, maxMoves: s.maxMoves });
+
+  // Recompute the distribution only when the data changes (memoized on identity).
+  const ensureDist = (s: GoState): void => {
+    if (chart && s.data !== chartData) {
+      chartData = s.data;
+      chartDist = colorDistribution(s.data, SAMPLES);
+    }
+  };
+  const drawChart = (s: GoState): void => {
+    if (!chart || !chartDist) return;
+    const count = s.data.count;
+    const frac = count > 0 ? Math.min(Math.floor(s.frame), count) / count : 0;
+    const n = chartDist.samples;
+    const hoverFrac = hoverSample !== null && n > 0 ? (n <= 1 ? 0 : hoverSample / (n - 1)) : null;
+    chart.draw(chartDist, s.data.colors, s.chartMode, s.chartScale, frac, hoverFrac);
+  };
 
   const syncLive = (s: GoState): void => {
     if (scrubEl && document.activeElement !== scrubEl) {
@@ -137,15 +147,8 @@ export function mountGoPanel(
     if (moveOut) moveOut.textContent = groupThousands(t);
     if (stoneOut) stoneOut.textContent = groupThousands(t - caps);
     if (capOut) capOut.textContent = groupThousands(caps);
-    if (chart) {
-      if (s.data !== chartData) {
-        chartData = s.data;
-        chartDist = colorDistribution(s.data, SAMPLES);
-      }
-      const frac =
-        s.data.count > 0 ? Math.min(Math.floor(s.frame), s.data.count) / s.data.count : 0;
-      if (chartDist) chart.draw(chartDist, s.data.colors, s.chartMode, s.chartScale, frac);
-    }
+    ensureDist(s);
+    drawChart(s);
   };
 
   const renderAll = (): void => {
@@ -293,18 +296,6 @@ export function mountGoPanel(
       }),
     ]);
 
-    counters = playerColors(s.pattern).map((hex) => ({ hex, counter: createCounter() }));
-    const countRow = el(
-      "div",
-      { className: "go-counts" },
-      counters.map(({ hex, counter }) =>
-        el("div", { className: "go-count" }, [
-          el("span", { className: "go-count-swatch", style: `background:${hex}` }),
-          counter.el,
-        ]),
-      ),
-    );
-
     const modeToggle = mSegmented<"stacked" | "lines">(
       [
         { value: "stacked", label: "Stacked" },
@@ -322,8 +313,27 @@ export function mountGoPanel(
       (v) => store.set({ chartScale: v }),
     );
     const chartCanvas = el("canvas", { className: "go-dist-canvas" }) as HTMLCanvasElement;
+    const tip = el("div", { className: "go-dist-tip" });
+    const chartWrap = el("div", { className: "go-dist-wrap" }, [chartCanvas, tip]);
     chart = createDistChart(chartCanvas);
     chartData = null; // force a distribution recompute on the next syncLive
+    hoverSample = null;
+
+    // Hover readout: the per-color live counts at the turn under the pointer.
+    chartCanvas.addEventListener("mousemove", (e) => {
+      if (!chartDist || chartDist.samples === 0 || chartDist.colorCount === 0) return;
+      const rect = chartCanvas.getBoundingClientRect();
+      const n = chartDist.samples;
+      const f = rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0;
+      hoverSample = Math.max(0, Math.min(n - 1, Math.round(f * (n - 1))));
+      fillDistTip(tip, chartWrap, chartDist, store.get().data.colors, hoverSample, e);
+      drawChart(store.get());
+    });
+    chartCanvas.addEventListener("mouseleave", () => {
+      hoverSample = null;
+      tip.style.display = "none";
+      drawChart(store.get());
+    });
 
     host.append(
       sectionLabel("Parameters"),
@@ -333,12 +343,10 @@ export function mountGoPanel(
       field("Max moves", maxMoves),
       field("Captured area", territoryToggle),
       readout,
-      sectionLabel("Stones by color"),
-      countRow,
       sectionLabel("Distribution"),
       field("Mode", modeToggle),
       field("Scale", scaleToggle),
-      chartCanvas,
+      chartWrap,
       sectionLabel("Turn order"),
       field("Pattern", patternRow),
       field("Presets", presets),
@@ -353,13 +361,45 @@ export function mountGoPanel(
     else syncLive(s);
   });
   renderAll();
+}
 
-  return {
-    tickCounts(byHex, dt) {
-      for (const [hex, n] of byHex) heldTargets.set(hex, n);
-      for (const { hex, counter } of counters) counter.tick(heldTargets.get(hex) ?? 0, dt);
-    },
-  };
+// Fills the distribution-chart hover tooltip with the live per-color counts at the
+// sampled turn under the pointer, and positions it opposite the cursor.
+function fillDistTip(
+  tip: HTMLElement,
+  wrap: HTMLElement,
+  dist: Distribution,
+  colors: string[],
+  sample: number,
+  e: MouseEvent,
+): void {
+  const C = dist.colorCount;
+  let total = 0;
+  for (let c = 0; c < C; c++) total += dist.counts[sample * C + c];
+  clear(tip);
+  tip.append(
+    el("div", { className: "go-tip-turn" }, [`Turn ${groupThousands(dist.turns[sample])}`]),
+  );
+  for (let c = 0; c < C; c++) {
+    const cnt = dist.counts[sample * C + c];
+    const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+    tip.append(
+      el("div", { className: "go-tip-row" }, [
+        el("span", { className: "go-tip-swatch", style: `background:${colors[c]}` }),
+        el("span", { className: "go-tip-val" }, [groupThousands(cnt)]),
+        el("span", { className: "go-tip-pct" }, [`${pct}%`]),
+      ]),
+    );
+  }
+  tip.style.display = "block";
+  const wrapRect = wrap.getBoundingClientRect();
+  const localX = e.clientX - wrapRect.left;
+  const tw = tip.offsetWidth;
+  let left = localX + 12;
+  if (left + tw > wrapRect.width) left = localX - tw - 12;
+  if (left < 0) left = 0;
+  tip.style.left = `${Math.round(left)}px`;
+  tip.style.top = "4px";
 }
 
 function readoutItem(label: string, bind: (valueEl: HTMLElement) => void): HTMLElement {

@@ -92,33 +92,60 @@
   outline-offset: 1px;
 }
 
-/* Live per-color stone counts. */
-.go-counts {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.go-count {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.go-count-swatch {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--border, #3a3a3a);
-  border-radius: 50%;
-  flex: none;
-}
-.go-count-value {
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-variant-numeric: tabular-nums;
-}
-
 /* Color-distribution plot. */
+.go-dist-wrap {
+  position: relative;
+}
 .go-dist-canvas {
   display: block;
   width: 100%;
   height: 120px;
   border-radius: 6px;
+  cursor: crosshair;
+}
+/* Hover readout: per-color live counts at the turn under the pointer. */
+.go-dist-tip {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  /* Mid-neutral (lighter than the chart backdrop) so it pops off the plot AND both
+     the black and white stone swatches read against it. */
+  background: #464c57;
+  color: #f4efe4;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.go-tip-turn {
+  margin-bottom: 3px;
+  color: rgba(244, 239, 228, 0.6);
+  letter-spacing: 0.04em;
+}
+.go-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.go-tip-swatch {
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  flex: none;
+}
+.go-tip-val {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  min-width: 4.5em;
+  text-align: right;
+}
+.go-tip-pct {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  color: rgba(244, 239, 228, 0.55);
+  min-width: 2.5em;
+  text-align: right;
 }

@@ -164,11 +164,6 @@ function mount(root: HTMLElement): void {
     const now = performance.now();
     const dt = lastT === 0 ? 0 : (now - lastT) / 1000;
     lastT = now;
-
-    const byHex = new Map<string, number>();
-    for (let i = 0; i < s.data.colors.length; i++) byHex.set(s.data.colors[i], seeker.counts[i]);
-    panelApi.tickCounts(byHex, dt);
-
     displayScale = easeScale(displayScale, target.scale, dt, ZOOM_SMOOTH_RATE);
 
     const dirty =
@@ -196,7 +191,7 @@ function mount(root: HTMLElement): void {
     );
   };
 
-  const panelApi = mountGoPanel(panelEl, store, () => engine.recompute());
+  mountGoPanel(panelEl, store, () => engine.recompute());
 
   const animator = createAnimator({
     isPlaying: () => store.get().playing,

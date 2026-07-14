@@ -17,11 +17,26 @@ describe("pattern model", () => {
     expect(GO_PALETTE).toContain("#171717");
     expect(GO_PALETTE).toContain("#f4efe4");
   });
-  it("exposes the named presets including a 3- and 4-player pattern", () => {
-    const names = PATTERN_PRESETS.map((p) => p.name);
-    expect(names).toContain("Standard");
-    expect(names).toContain("Three players");
-    expect(PATTERN_PRESETS.find((p) => p.name === "Four players")?.pattern).toHaveLength(4);
+  it("exposes the seven named presets with the expected color orders", () => {
+    const byName = new Map(PATTERN_PRESETS.map((p) => [p.name, p.pattern]));
+    expect([...byName.keys()]).toEqual([
+      "Standard",
+      "3 players",
+      "4 players",
+      "5 players",
+      "Mirror",
+      "Mirror 3",
+      "Mirror 4",
+    ]);
+    const B = "#171717";
+    const W = "#f4efe4";
+    const G = "#2f9e57";
+    const R = "#cf2f2a";
+    const L = "#2f6fdb";
+    expect(byName.get("Standard")).toEqual([B, W]);
+    expect(byName.get("5 players")).toEqual([B, W, G, R, L]);
+    expect(byName.get("Mirror")).toEqual([B, W, W, B]);
+    expect(byName.get("Mirror 4")).toEqual([B, W, W, B, G, R]);
   });
   it("playerColors returns distinct colors in first-seen order", () => {
     expect(playerColors(["#171717", "#f4efe4", "#171717", "#cf2f2a"])).toEqual([

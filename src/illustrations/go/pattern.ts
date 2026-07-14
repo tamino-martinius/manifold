@@ -26,14 +26,19 @@ export const GO_PALETTE: string[] = [
 
 export const DEFAULT_PATTERN: string[] = [GO_COLORS.black, GO_COLORS.white];
 
+const { black: B, white: W, green: G, red: R, blue: L } = GO_COLORS;
+
 export const PATTERN_PRESETS: { name: string; pattern: string[] }[] = [
-  { name: "Standard", pattern: [GO_COLORS.black, GO_COLORS.white] },
-  { name: "Black-heavy", pattern: [GO_COLORS.black, GO_COLORS.black, GO_COLORS.white] },
-  { name: "Three players", pattern: [GO_COLORS.black, GO_COLORS.white, GO_COLORS.red] },
-  {
-    name: "Four players",
-    pattern: [GO_COLORS.black, GO_COLORS.white, GO_COLORS.red, GO_COLORS.green],
-  },
+  // Equal rotation of N players.
+  { name: "Standard", pattern: [B, W] },
+  { name: "3 players", pattern: [B, W, G] },
+  { name: "4 players", pattern: [B, W, G, R] },
+  { name: "5 players", pattern: [B, W, G, R, L] },
+  // "Mirror" family: the palindromic B,W,W,B core (each doubles its turn) extended
+  // with extra single-turn players.
+  { name: "Mirror", pattern: [B, W, W, B] },
+  { name: "Mirror 3", pattern: [B, W, W, B, G] },
+  { name: "Mirror 4", pattern: [B, W, W, B, G, R] },
 ];
 
 /** Distinct colors in first-seen order — the players in this pattern. */

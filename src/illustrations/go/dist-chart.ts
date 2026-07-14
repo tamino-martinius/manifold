@@ -22,12 +22,13 @@ export function createDistChart(canvas: HTMLCanvasElement): {
     mode: "stacked" | "lines",
     scale: "percentage" | "absolute",
     frameFraction: number,
+    hoverFraction: number | null,
   ): void;
 } {
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
   return {
-    draw(dist, colors, mode, scale, frameFraction) {
+    draw(dist, colors, mode, scale, frameFraction, hoverFraction) {
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.clientWidth || 240;
       const h = canvas.clientHeight || 120;
@@ -130,6 +131,18 @@ export function createDistChart(canvas: HTMLCanvasElement): {
             ctx.stroke();
           }
         }
+      }
+
+      // Hover crosshair — a soft, thin line marking the pointer's turn (drawn under
+      // the bolder playhead so the two never fight when they overlap).
+      if (hoverFraction !== null) {
+        const hx = Math.round(hoverFraction * w) + 0.5;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(hx, 0);
+        ctx.lineTo(hx, h);
+        ctx.stroke();
       }
 
       // Playhead — a light core with a dark halo so it reads over any band.

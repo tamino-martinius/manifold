@@ -10,6 +10,7 @@ import {
   mSegmented,
   mSlider,
 } from "../../chessboard/panel/controls";
+import { loadCustomPresets, saveCustomPresets } from "../custom-presets";
 import { createDistChart } from "../dist-chart";
 import { type Distribution, colorDistribution } from "../distribution";
 import { GO_PALETTE, PATTERN_PRESETS, nextAddColor } from "../pattern";
@@ -113,9 +114,60 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
   let chartData: GoData | null = null; // memo key
   let chartDist: Distribution | null = null;
   let hoverSample: number | null = null; // distribution-chart hover: sampled turn under the pointer
+  const customPresets = loadCustomPresets(); // user-saved patterns (mutated in place, persisted)
+  let presetGrid: HTMLElement | null = null;
 
   const structKey = (s: GoState): string =>
     JSON.stringify({ pattern: s.pattern, maxMoves: s.maxMoves });
+
+  const applyPattern = (pattern: string[]): void => setPattern(store, [...pattern], onChange);
+
+  // Rebuild the preset grid: the built-in presets, then the user's custom presets
+  // (each with a hover delete cross), then the "save current pattern" add tile.
+  const renderPresets = (): void => {
+    if (!presetGrid) return;
+    const grid = presetGrid;
+    clear(grid);
+    for (const p of PATTERN_PRESETS) {
+      grid.append(presetButton(p.pattern, p.name, () => applyPattern(p.pattern)));
+    }
+    customPresets.forEach((pattern, i) => {
+      const btn = presetButton(pattern, "Custom preset", () => applyPattern(pattern));
+      const del = el(
+        "button",
+        {
+          type: "button",
+          className: "go-preset-del",
+          title: "Delete preset",
+          "aria-label": "Delete preset",
+        },
+        [icon("x", 10)],
+      );
+      del.addEventListener("click", (e) => {
+        e.stopPropagation();
+        customPresets.splice(i, 1);
+        saveCustomPresets(customPresets);
+        renderPresets();
+      });
+      grid.append(el("div", { className: "go-preset-slot" }, [btn, del]));
+    });
+    const add = el(
+      "button",
+      {
+        type: "button",
+        className: "go-preset go-preset--add",
+        title: "Save the current pattern as a preset",
+        "aria-label": "Save the current pattern as a preset",
+      },
+      [icon("plus", 14)],
+    );
+    add.addEventListener("click", () => {
+      customPresets.push([...store.get().pattern]);
+      saveCustomPresets(customPresets);
+      renderPresets();
+    });
+    grid.append(add);
+  };
 
   // Recompute the distribution only when the data changes (memoized on identity).
   const ensureDist = (s: GoState): void => {
@@ -277,13 +329,8 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
     });
     patternRow.append(addChip);
 
-    const presets = el(
-      "div",
-      { className: "go-presets" },
-      PATTERN_PRESETS.map((p) =>
-        mButton(p.name, { onClick: () => setPattern(store, [...p.pattern], onChange) }),
-      ),
-    );
+    presetGrid = el("div", { className: "go-preset-grid" });
+    renderPresets();
 
     const readout = el("div", { className: "go-readout" }, [
       readoutItem("Move", (m) => {
@@ -350,7 +397,7 @@ export function mountGoPanel(host: HTMLElement, store: Store<GoState>, onChange:
       chartWrap,
       sectionLabel("Turn order"),
       field("Pattern", patternRow),
-      field("Presets", presets),
+      field("Presets", presetGrid),
     );
 
     lastStructKey = structKey(s);
@@ -401,6 +448,21 @@ function fillDistTip(
   if (left < 0) left = 0;
   tip.style.left = `${Math.round(left)}px`;
   tip.style.top = "4px";
+}
+
+// A compact preset button: the pattern previewed as slightly-overlapping color
+// dots (its turn order), with the preset name as the hover title.
+function presetButton(pattern: string[], name: string, onClick: () => void): HTMLButtonElement {
+  const dots = el("span", { className: "go-preset-dots" });
+  for (const c of pattern)
+    dots.append(el("span", { className: "go-preset-dot", style: `background:${c}` }));
+  const btn = el(
+    "button",
+    { type: "button", className: "go-preset", title: name, "aria-label": name },
+    [dots],
+  ) as HTMLButtonElement;
+  btn.addEventListener("click", onClick);
+  return btn;
 }
 
 function readoutItem(label: string, bind: (valueEl: HTMLElement) => void): HTMLElement {

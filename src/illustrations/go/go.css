@@ -37,10 +37,69 @@
 .go-chip-remove:hover {
   color: var(--danger, #e10600);
 }
-.go-presets {
-  display: flex;
-  flex-wrap: wrap;
+/* Preset grid: 5 per row, each a swatch-preview tile. */
+.go-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
+}
+.go-preset-slot {
+  position: relative;
+}
+.go-preset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 3px;
+  /* Fixed dark-neutral tile (like the chart backdrop) so both black and white
+     stone dots read regardless of theme. */
+  background: #2b3038;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.go-preset:hover {
+  border-color: var(--accent, #e10600);
+}
+.go-preset--add {
+  color: rgba(255, 255, 255, 0.5);
+}
+.go-preset-dots {
+  display: inline-flex;
+  align-items: center;
+}
+.go-preset-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  margin-left: -6px;
+}
+.go-preset-dot:first-child {
+  margin-left: 0;
+}
+.go-preset-del {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-flex;
+  padding: 1px;
+  border: none;
+  border-radius: 50%;
+  background: #1a1d22;
+  color: #ddd;
+  cursor: pointer;
+  line-height: 0;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.go-preset-slot:hover .go-preset-del {
+  opacity: 1;
+}
+.go-preset-del:hover {
+  color: var(--danger, #e10600);
 }
 .go-readout {
   display: flex;
